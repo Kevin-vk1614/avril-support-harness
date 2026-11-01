@@ -1,0 +1,32 @@
+{
+  "ticketId": "LAB-TEST-0005",
+  "mustEscalate": true,
+  "handoffSummary": "[HIGH] LAB-TEST-0005 · refund. session=cs_test_S05aBcD pi=pi_test_S05xYz slug=seat-s05 rental=ready. Síntoma: Reembolso Quiero un reembolso, ya no quiero el trial. Pagué ayer. Siguiente: Ops verifica el cobro en Stripe con los ids de este handoff (solo lectura).",
+  "devHandoff": {
+    "ticketId": "LAB-TEST-0005",
+    "category": "refund",
+    "severity": "high",
+    "symptom": "Reembolso Quiero un reembolso, ya no quiero el trial. Pagué ayer.",
+    "identifiers": {
+      "stripeSessionId": "cs_test_S05aBcD",
+      "stripePaymentIntentId": "pi_test_S05xYz",
+      "slug": "seat-s05",
+      "deploymentId": null,
+      "rentalStatus": "ready",
+      "paymentStatus": "paid",
+      "walletPresent": false,
+      "contactMasked": "p***@e***.com"
+    },
+    "hypotheses": [
+      "Solicitud de reembolso. No hay política de reembolso en las fuentes confirmadas."
+    ],
+    "nextTechnicalStep": [
+      "Ops verifica el cobro en Stripe con los ids de este handoff (solo lectura).",
+      "Revisar si el entorno llegó a estar 'ready' antes de decidir.",
+      "Decisión y ejecución del reembolso: humano en Stripe. El arnés no procesa pagos ni promete reembolsos."
+    ],
+    "runbook": "docs/guides/lab-support-ops.md (repo Lab-Avril-Life)",
+    "notConfirmedTopics": [],
+    "reproducible": "node src/cli.js <ticket.json>  (determinista, sin red)"
+  }
+}

@@ -1,0 +1,35 @@
+#!/usr/bin/env node
+// Modo "tickets reales exportados": lee un .jsonl (uno por línea) o un .json (objeto/arreglo) con
+// SupportTicketRecord exportados por un HUMANO (p. ej. desde /admin o el JSONL de Lab) y genera handoffs.
+// NO se conecta a Lab, NO envía nada. Salida en out/live/ (ignorada por git: puede venir de datos reales).
+// Uso: node scripts/triage-jsonl.js <archivo> [directorio-salida]
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { triage } from "../src/harness.js";
+
+const [file, outDir = "out/live"] = process.argv.slice(2);
+if (!file) { console.error("Uso: node scripts/triage-jsonl.js <archivo.jsonl|.json> [dir-salida]"); process.exit(2); }
+
+const text = readFileSync(file, "utf8").trim();
+let records;
+if (file.endsWith(".jsonl")) {
+  records = text.split(/\r?\n/).filter(Boolean).map((l, i) => { try { return JSON.parse(l); } catch { return { __parseError: `línea ${i + 1} no es JSON` }; } });
+} else {
+  const j = JSON.parse(text);
+  records = Array.isArray(j) ? j : [j];
+}
+
+mkdirSync(`${outDir}/handoffs`, { recursive: true });
+const lines = [];
+let esc = 0, ok = 0, bad = 0;
+for (const r of records) {
+  try {
+    if (r.__parseError) throw new Error(r.__parseError);
+    const o = triage(r);
+    ok++; if (o.mustEscalate) esc++;
+    writeFileSync(`${outDir}/handoffs/${o.ticketId}.json`, JSON.stringify({ ticketId: o.ticketId, mustEscalate: o.mustEscalate, handoffSummary: o.handoffSummary, devHandoff: o.devHandoff, publicReplyDraft: o.publicReplyDraft }, null, 2));
+    lines.push(JSON.stringify({ ticketId: o.ticketId, category: o.category, severity: o.severity, mustEscalate: o.mustEscalate, resolvedByAgent: !o.mustEscalate, source: "exported-ticket" }));
+    console.log(`${o.mustEscalate ? "ESCALA" : "FAQ   "}  ${o.ticketId}  ${o.category}  ${o.severity}`);
+  } catch (e) { bad++; lines.push(JSON.stringify({ error: e.message })); console.log(`ERROR   ${e.message}`); }
+}
+writeFileSync(`${outDir}/tickets-log.jsonl`, lines.join("\n") + "\n");
+console.log(`\n${ok} procesados · ${esc} escalan · ${ok - esc} FAQ · ${bad} con error → ${outDir}/`);

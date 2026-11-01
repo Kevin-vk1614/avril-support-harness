@@ -1,0 +1,33 @@
+{
+  "ticketId": "LAB-TEST-0004",
+  "mustEscalate": true,
+  "handoffSummary": "[HIGH] LAB-TEST-0004 · paid_no_agent. session=cs_test_S04aBcD pi=pi_test_S04xYz. Síntoma: No me aparece nada Me cobraron el trial pero en Mis agentes no me aparece ningún agente. Siguiente: Buscar el rental por stripeSessionId/PaymentIntent y comparar wallet del pago vs. sesión del comprador.",
+  "devHandoff": {
+    "ticketId": "LAB-TEST-0004",
+    "category": "paid_no_agent",
+    "severity": "high",
+    "symptom": "No me aparece nada Me cobraron el trial pero en Mis agentes no me aparece ningún agente.",
+    "identifiers": {
+      "stripeSessionId": "cs_test_S04aBcD",
+      "stripePaymentIntentId": "pi_test_S04xYz",
+      "slug": null,
+      "deploymentId": null,
+      "rentalStatus": null,
+      "paymentStatus": "paid",
+      "walletPresent": true,
+      "contactMasked": "m***@e***.com"
+    },
+    "hypotheses": [
+      "Mapeo owner→agente frágil (persistencia en JSON de owner-agents) o wallet distinta a la del pago.",
+      "Webhook no procesado, o checkout en modo mock (sin launch)."
+    ],
+    "nextTechnicalStep": [
+      "Buscar el rental por stripeSessionId/PaymentIntent y comparar wallet del pago vs. sesión del comprador.",
+      "Revisar si existe deployment en LaunchOpenClaw sin dueño asociado.",
+      "Seguir docs/guides/lab-paid-not-ready.md (repo Lab-Avril-Life) si el seat existe pero no está ready."
+    ],
+    "runbook": "docs/guides/lab-paid-not-ready.md (repo Lab-Avril-Life)",
+    "notConfirmedTopics": [],
+    "reproducible": "node src/cli.js <ticket.json>  (determinista, sin red)"
+  }
+}

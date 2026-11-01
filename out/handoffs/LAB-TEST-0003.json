@@ -1,0 +1,35 @@
+{
+  "ticketId": "LAB-TEST-0003",
+  "mustEscalate": true,
+  "handoffSummary": "[HIGH] LAB-TEST-0003 · paid_not_ready. session=cs_test_S03aBcD pi=pi_test_S03xYz slug=seat-s03 rental=not_ready. Síntoma: Pagué y no está listo Pagué el trial hace 45 minutos y mi agente no está listo, sigue en espera. Siguiente: Seguir runbook docs/guides/lab-paid-not-ready.md (repo Lab-Avril-Life).",
+  "devHandoff": {
+    "ticketId": "LAB-TEST-0003",
+    "category": "paid_not_ready",
+    "severity": "high",
+    "symptom": "Pagué y no está listo Pagué el trial hace 45 minutos y mi agente no está listo, sigue en espera.",
+    "identifiers": {
+      "stripeSessionId": "cs_test_S03aBcD",
+      "stripePaymentIntentId": "pi_test_S03xYz",
+      "slug": "seat-s03",
+      "deploymentId": null,
+      "rentalStatus": "not_ready",
+      "paymentStatus": "paid",
+      "walletPresent": false,
+      "contactMasked": "l***@e***.com"
+    },
+    "hypotheses": [
+      "Webhook de Stripe no entregado o launchCompany falló (app/api/webhooks/stripe/route.ts → launchCompany).",
+      "Soft-fail documentado: launcher_not_configured / paid_waiting_infra (app/api/rentals/route.ts).",
+      "Capacidad de VPS agotada (~3 seats/VPS) o health check/Caddy/SSH fallando en LaunchOpenClaw."
+    ],
+    "nextTechnicalStep": [
+      "Seguir runbook docs/guides/lab-paid-not-ready.md (repo Lab-Avril-Life).",
+      "Revisar entrega del webhook para el stripeSessionId en el dashboard de Stripe.",
+      "Consultar estado: GET /api/rentals?session_id=<stripeSessionId> y el deployment record del slug en LaunchOpenClaw.",
+      "NO volver a lanzar ni cobrar de nuevo hasta confirmar que no existe un seat duplicado."
+    ],
+    "runbook": "docs/guides/lab-paid-not-ready.md (repo Lab-Avril-Life)",
+    "notConfirmedTopics": [],
+    "reproducible": "node src/cli.js <ticket.json>  (determinista, sin red)"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "ticketId": "LAB-TEST-0006",
+  "mustEscalate": true,
+  "handoffSummary": "[MEDIUM] LAB-TEST-0006 · access_failure. session=cs_test_S06aBcD slug=seat-s06 rental=ready. Síntoma: No abre Mi Control UI da error 502 y no puedo entrar desde ayer. Siguiente: Verificar estado del seat y URL del Control UI (patrón *.avril.life).",
+  "devHandoff": {
+    "ticketId": "LAB-TEST-0006",
+    "category": "access_failure",
+    "severity": "medium",
+    "symptom": "No abre Mi Control UI da error 502 y no puedo entrar desde ayer.",
+    "identifiers": {
+      "stripeSessionId": "cs_test_S06aBcD",
+      "stripePaymentIntentId": null,
+      "slug": "seat-s06",
+      "deploymentId": null,
+      "rentalStatus": "ready",
+      "paymentStatus": null,
+      "walletPresent": false,
+      "contactMasked": "s***@e***.com"
+    },
+    "hypotheses": [
+      "Control UI no disponible (health check, Caddy, subdominio *.avril.life) o seat no ready.",
+      "Falla de sign-in con wallet."
+    ],
+    "nextTechnicalStep": [
+      "Verificar estado del seat y URL del Control UI (patrón *.avril.life).",
+      "Probar sign-in con wallet en entorno de prueba; no pedir credenciales al comprador."
+    ],
+    "runbook": "docs/guides/lab-support-ops.md (repo Lab-Avril-Life)",
+    "notConfirmedTopics": [],
+    "reproducible": "node src/cli.js <ticket.json>  (determinista, sin red)"
+  }
+}

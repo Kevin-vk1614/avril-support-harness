@@ -1,0 +1,36 @@
+{
+  "ticketId": "LAB-TEST-0002",
+  "mustEscalate": true,
+  "handoffSummary": "[LOW] LAB-TEST-0002 · topic_not_confirmed. Síntoma: Integración ¿Puedo pagar con cripto (x402) y tienen una API sandbox para desarrolladores? Siguiente: Humano responde sin prometer. Si se repite, evaluar agregar una entrada FAQ confirmada.",
+  "devHandoff": {
+    "ticketId": "LAB-TEST-0002",
+    "category": "topic_not_confirmed",
+    "severity": "low",
+    "symptom": "Integración ¿Puedo pagar con cripto (x402) y tienen una API sandbox para desarrolladores?",
+    "identifiers": {
+      "stripeSessionId": null,
+      "stripePaymentIntentId": null,
+      "slug": null,
+      "deploymentId": null,
+      "rentalStatus": null,
+      "paymentStatus": null,
+      "walletPresent": false,
+      "contactMasked": "d***@e***.com"
+    },
+    "hypotheses": [
+      "El tema está marcado UNKNOWN/MOCK/no enviado en las fuentes; responder solo traería riesgo de promesa falsa."
+    ],
+    "nextTechnicalStep": [
+      "Humano responde sin prometer. Si se repite, evaluar agregar una entrada FAQ confirmada."
+    ],
+    "runbook": "docs/guides/lab-support-ops.md (repo Lab-Avril-Life)",
+    "notConfirmedTopics": [
+      {
+        "id": "nc-sandbox-api-mcp-skills",
+        "note": "Sandbox de desarrollador / bundles MCP-skills / pagos cripto-x402 NO están enviados en la oferta de Lab (MOCK / NOT SHIPPED / THESIS).",
+        "source": "02-current-product-agent-launcher.md ('MOCK / NOT SHIPPED'), CURRENT-STATE.md ('Claims we should not make yet')"
+      }
+    ],
+    "reproducible": "node src/cli.js <ticket.json>  (determinista, sin red)"
+  }
+}

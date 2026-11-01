@@ -1,0 +1,14 @@
+{
+  "id": "LAB-20261029-0001",
+  "createdAt": "2026-10-29T15:04:00.000Z",
+  "status": "open",
+  "source": "lab-form",
+  "email": "comprador@example.com",
+  "subject": "Pagué y mi agente no está listo",
+  "message": "Pagué el trial hace 40 minutos y sigue en espera, no está listo mi agente.",
+  "stripeSessionId": "cs_test_a1B2c3D4",
+  "stripePaymentIntentId": "pi_test_3Nxxxxxxxxxxxx",
+  "paymentStatus": "paid",
+  "slug": "demo-seat-01",
+  "rentalStatus": "paid_waiting_infra"
+}

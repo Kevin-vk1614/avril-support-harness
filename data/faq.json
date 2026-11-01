@@ -1,0 +1,201 @@
+{
+  "_meta": {
+    "purpose": "Base FAQ corta. SOLO afirmaciones confirmadas en documentos existentes del repo AvrilContextProtocol-MCP.",
+    "rule": "Si un tema no está aquí ni en notConfirmed, el arnés no responde: escala a humano.",
+    "lastVerifiedAgainstSources": "2026-10-20 (QA Ciclo 1) y 2026-10-02 (CURRENT-STATE / Reality Audit)",
+    "verifyBeforeSend": "Precios leídos de la landing el 2026-10-20 sin probar Stripe; un humano confirma moneda/vigencia antes de enviar."
+  },
+  "entries": [
+    {
+      "id": "faq-pricing-duration",
+      "strong": [
+        "precio",
+        "precios",
+        "cuesta",
+        "costo",
+        "cuanto vale",
+        "price",
+        "how much",
+        "day pass",
+        "monthly"
+      ],
+      "weak": [
+        "trial",
+        "7 dias",
+        "dura",
+        "duracion",
+        "plan"
+      ],
+      "answer": "Lab tiene tres planes con precio de lista: Day Pass $6 por 48 horas, Trial $15 por 7 días y Monthly $29 por 30 días. El hosting está incluido; el modelo es BYOK (traes tu propia API key).",
+      "caveat": "Precios leídos de la landing el 2026-10-20; el checkout de Stripe aún no se ha probado. Confirmar moneda y vigencia antes de enviar.",
+      "sources": [
+        "Informe 'QA Lab Fricción — Ciclo 1' (Claude Doc, 2026-10-20, lab.avril.life) — Caso 1 (precios) y Caso 2 (e47)",
+        "AVRIL-REALITY-AUDIT-2026-10-02.md ('$15 / 7d default')"
+      ]
+    },
+    {
+      "id": "faq-what-is-lab",
+      "strong": [
+        "que es avril lab",
+        "que es lab",
+        "what is avril lab",
+        "que ofrece",
+        "que es el launcher",
+        "que es agent launcher"
+      ],
+      "weak": [
+        "avril lab",
+        "launcher",
+        "openclaw"
+      ],
+      "answer": "Avril Lab (Agent Launcher) te permite rentar un entorno OpenClaw hospedado y persistente, sin que tengas que operar servidores tú mismo. Avril despliega y hospeda el runtime del agente.",
+      "sources": [
+        "AvrilContextProtocol-MCP/content/canonical/02-current-product-agent-launcher.md ('Core job' y 'Commercial boundary')",
+        "AvrilContextProtocol-MCP/content/current-state/CURRENT-STATE.md ('Claims we can make today')"
+      ]
+    },
+    {
+      "id": "faq-how-it-works",
+      "strong": [
+        "como funciona",
+        "como rento",
+        "como rentar",
+        "como compro",
+        "como contrato",
+        "cuales son los pasos"
+      ],
+      "weak": [
+        "pasos",
+        "flujo",
+        "proceso",
+        "checkout"
+      ],
+      "answer": "El flujo es: entras a la página de Lab, inicias sesión con tu wallet cuando se requiere, vas a /renta y pagas con Stripe Checkout. Tras el pago se lanza tu entorno OpenClaw aislado y, cuando está listo, recibes el enlace a tu Control UI.",
+      "sources": [
+        "AvrilContextProtocol-MCP/content/canonical/02-current-product-agent-launcher.md ('Current end-to-end flow')"
+      ]
+    },
+    {
+      "id": "faq-no-outcome-guarantee",
+      "strong": [
+        "garantiz",
+        "garantia",
+        "ganar dinero",
+        "generar ingresos",
+        "resultados del agente"
+      ],
+      "weak": [
+        "resultado",
+        "ingresos",
+        "negocio"
+      ],
+      "answer": "Avril despliega y hospeda el entorno del agente. En esta versión no garantizamos el resultado de negocio que produzca tu agente.",
+      "sources": [
+        "AvrilContextProtocol-MCP/content/canonical/02-current-product-agent-launcher.md ('Commercial boundary')"
+      ]
+    },
+    {
+      "id": "faq-byok",
+      "strong": [
+        "que es byok",
+        "que significa byok",
+        "byok"
+      ],
+      "weak": [
+        "modelo incluido",
+        "incluye el modelo",
+        "api del modelo"
+      ],
+      "answer": "BYOK significa 'bring your own key': el hosting está incluido, pero el modelo lo pones tú con tu propia API key de modelo.",
+      "sources": [
+        "Informe 'QA Lab Fricción — Ciclo 1' (Claude Doc, 2026-10-20, lab.avril.life) — Caso 2 (e47, e85)"
+      ]
+    },
+    {
+      "id": "faq-harnesses",
+      "strong": [
+        "que harness",
+        "cuales harness",
+        "harnesses disponibles",
+        "openclaw o hermes",
+        "hermes"
+      ],
+      "weak": [
+        "harness",
+        "nanoclaw"
+      ],
+      "answer": "Hoy puedes usar OpenClaw o Hermes con un clic, con hosting incluido. Otros harnesses (como Nanoclaw) aparecen como 'pronto', sin fecha confirmada.",
+      "sources": [
+        "Informe 'QA Lab Fricción — Ciclo 1' (Claude Doc, 2026-10-20, lab.avril.life) — Caso 2 (e85, e97)"
+      ]
+    }
+  ],
+  "notConfirmed": [
+    {
+      "id": "nc-time-to-ready",
+      "keywords": [
+        "cuanto tarda",
+        "cuanto demora",
+        "en cuanto tiempo",
+        "tiempo de activacion",
+        "tarda en estar"
+      ],
+      "note": "No hay tiempo garantizado de 'pago → listo'. La prueba productiva de pay → ready sigue UNKNOWN.",
+      "source": "CURRENT-STATE.md ('The code path exists. Production proof ... is still UNKNOWN')"
+    },
+    {
+      "id": "nc-sandbox-api-mcp-skills",
+      "keywords": [
+        "sandbox",
+        "api para desarrolladores",
+        "api de desarrollador",
+        "mcp",
+        "skills",
+        "x402",
+        "cripto",
+        "crypto",
+        "usdc"
+      ],
+      "note": "Sandbox de desarrollador / bundles MCP-skills / pagos cripto-x402 NO están enviados en la oferta de Lab (MOCK / NOT SHIPPED / THESIS).",
+      "source": "02-current-product-agent-launcher.md ('MOCK / NOT SHIPPED'), CURRENT-STATE.md ('Claims we should not make yet')"
+    },
+    {
+      "id": "nc-sla-reliability",
+      "keywords": [
+        "sla",
+        "uptime",
+        "garantia de disponibilidad",
+        "disponibilidad",
+        "es confiable",
+        "seguro es"
+      ],
+      "note": "No se puede prometer fiabilidad de producción ni multi-tenant seguro todavía.",
+      "source": "CURRENT-STATE.md ('Claims we should not make yet')"
+    },
+    {
+      "id": "nc-refund-policy",
+      "keywords": [
+        "politica de reembolso",
+        "politica de devolucion"
+      ],
+      "note": "No hay política de reembolso en las fuentes confirmadas.",
+      "source": "(ausente en content/)"
+    },
+    {
+      "id": "nc-capacity-waitlist",
+      "keywords": [
+        "cupo",
+        "cupos",
+        "lugares disponibles",
+        "waitlist",
+        "lista de espera",
+        "capacidad",
+        "se agotaron",
+        "seats left",
+        "quedan seats"
+      ],
+      "note": "La página no muestra contador de lugares ni waitlist; solo el plan Monthly menciona un tope de capacidad. No prometer disponibilidad.",
+      "source": "Informe 'QA Lab Fricción — Ciclo 1' (Claude Doc, 2026-10-20, lab.avril.life) — Caso 4 (e79)"
+    }
+  ]
+}

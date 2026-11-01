@@ -1,0 +1,28 @@
+{
+  "ticketId": "LAB-TEST-0001",
+  "mustEscalate": false,
+  "handoffSummary": null,
+  "devHandoff": {
+    "ticketId": "LAB-TEST-0001",
+    "category": "faq",
+    "severity": "none",
+    "symptom": "Precio Hola, ¿cuánto cuesta el trial de Lab y cuánto dura?",
+    "identifiers": {
+      "stripeSessionId": null,
+      "stripePaymentIntentId": null,
+      "slug": null,
+      "deploymentId": null,
+      "rentalStatus": null,
+      "paymentStatus": null,
+      "walletPresent": false,
+      "contactMasked": "a***@e***.com"
+    },
+    "hypotheses": [],
+    "nextTechnicalStep": [
+      "Ninguno: pregunta cubierta por FAQ confirmada (borrador sujeto a aprobación humana)."
+    ],
+    "runbook": "docs/guides/lab-support-ops.md (repo Lab-Avril-Life)",
+    "notConfirmedTopics": [],
+    "reproducible": "node src/cli.js <ticket.json>  (determinista, sin red)"
+  }
+}

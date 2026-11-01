@@ -1,0 +1,14 @@
+{
+  "name": "avril-support-harness",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Arnés de triage agéntico para soporte de Avril Lab (prototipo Ciclo 2). Sin dependencias, sin red, sin envíos.",
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "triage": "node src/cli.js",
+    "scenarios": "node scripts/run-scenarios.js",
+    "test": "node --test test/*.test.js",
+    "demo": "node scripts/run-scenarios.js && node src/cli.js fixtures/example-ticket.json"
+  }
+}

@@ -1,0 +1,8 @@
+{"ticketId":"LAB-TEST-0001","scenario":"S01-faq-pricing","category":"faq","severity":"none","mustEscalate":false,"resolvedByAgent":true,"handoffFile":"out/handoffs/LAB-TEST-0001.json","simulated":true}
+{"ticketId":"LAB-TEST-0002","scenario":"S02-unconfirmed-topic","category":"topic_not_confirmed","severity":"low","mustEscalate":true,"resolvedByAgent":false,"handoffFile":"out/handoffs/LAB-TEST-0002.json","simulated":true}
+{"ticketId":"LAB-TEST-0003","scenario":"S03-paid-not-ready","category":"paid_not_ready","severity":"high","mustEscalate":true,"resolvedByAgent":false,"handoffFile":"out/handoffs/LAB-TEST-0003.json","simulated":true}
+{"ticketId":"LAB-TEST-0004","scenario":"S04-paid-no-agent","category":"paid_no_agent","severity":"high","mustEscalate":true,"resolvedByAgent":false,"handoffFile":"out/handoffs/LAB-TEST-0004.json","simulated":true}
+{"ticketId":"LAB-TEST-0005","scenario":"S05-refund","category":"refund","severity":"high","mustEscalate":true,"resolvedByAgent":false,"handoffFile":"out/handoffs/LAB-TEST-0005.json","simulated":true}
+{"ticketId":"LAB-TEST-0006","scenario":"S06-access-failure","category":"access_failure","severity":"medium","mustEscalate":true,"resolvedByAgent":false,"handoffFile":"out/handoffs/LAB-TEST-0006.json","simulated":true}
+{"ticketId":"LAB-TEST-0007","scenario":"S07-secrets-leak","category":"secrets_exposed","severity":"critical","mustEscalate":true,"resolvedByAgent":false,"handoffFile":"out/handoffs/LAB-TEST-0007.json","simulated":true}
+{"ticketId":"LAB-TEST-0008","scenario":"S08-data-privacy","category":"data_privacy","severity":"high","mustEscalate":true,"resolvedByAgent":false,"handoffFile":"out/handoffs/LAB-TEST-0008.json","simulated":true}
