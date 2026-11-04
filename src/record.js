@@ -1,42 +1,48 @@
-// Normaliza un SupportTicketRecord a un objeto canónico.
-// SUPUESTO: la forma exacta vive en `lib/support-tickets.ts` (repo Lab-Avril-Life), al que no
-// tengo acceso. Aquí se aceptan alias comunes; ajustar ALIASES cuando se compare con el .ts real.
-const ALIASES = {
-  id: ["id", "ticketId", "ticket_id"],
-  createdAt: ["createdAt", "created_at", "ts"],
-  status: ["status"],
-  source: ["source", "channel"],
-  contact: ["email", "contact", "contactEmail"],
-  subject: ["subject", "title"],
-  message: ["message", "body", "description", "text"],
-  userCategory: ["category", "topic"],
-  wallet: ["wallet", "walletAddress", "wallet_address"],
-  stripeSessionId: ["stripeSessionId", "stripe_session_id", "sessionId", "session_id"],
-  stripePaymentIntentId: ["stripePaymentIntentId", "paymentIntentId", "payment_intent"],
-  paymentStatus: ["paymentStatus", "payment_status"],
-  slug: ["slug", "rentalSlug", "agentSlug", "companySlug"],
-  rentalStatus: ["rentalStatus", "rental_status", "deploymentStatus"],
-  deploymentId: ["deploymentId", "deployment_id"],
-  controlUiUrl: ["controlUiUrl", "control_ui_url"],
-};
-
-const pick = (r, keys) => {
-  for (const k of keys) if (r[k] !== undefined && r[k] !== null && r[k] !== "") return r[k];
-  return null;
-};
+// CONTRATO VERIFICADO contra el tipo real `SupportTicketRecord` de
+// Avril-Systems/Lab-Avril-Life/lib/support-tickets.ts (archivo compartido por Kevin, 2026-11).
+//
+//   scope: 'avril.lab.support_ticket'      ticketId: string  (LAB-YYYYMMDD-XXXX; XXXX = 4 hex en prod, 4 alfanuméricos en fixtures dev)
+//   createdAt: string (ISO)                email: string
+//   category: 'not_ready' | 'refund' | 'other'     (la elige el comprador en el formulario)
+//   message: string
+//   stripeSessionId: string | null         labSlug: string | null
+//   locale: 'en' | 'es'                    clientIp: string   (dato personal: NUNCA sale del arnés)
+//
+// NO existen en el tipo real: id, subject, status, source, wallet, stripePaymentIntentId, paymentStatus,
+// rentalStatus, deploymentId, controlUiUrl. Se aceptan como alias legados solo `id` → ticketId (con aviso).
+export const REAL_FIELDS = ["scope", "ticketId", "createdAt", "email", "category", "message", "stripeSessionId", "labSlug", "locale", "clientIp"];
+export const REAL_CATEGORIES = ["not_ready", "refund", "other"];
+const TICKET_ID_RE = /^LAB-\d{8}-[0-9A-Z]{4}$/; // el generador real da 4 hex (randomBytes(2)); los fixtures dev usan DEV1/DEV2
 
 export function normalizeRecord(raw) {
-  if (!raw || typeof raw !== "object") throw new TypeError("SupportTicketRecord debe ser un objeto JSON");
-  const rec = {};
-  for (const [canon, keys] of Object.entries(ALIASES)) rec[canon] = pick(raw, keys);
-  if (!rec.message || typeof rec.message !== "string") {
-    throw new TypeError(`Ticket ${rec.id ?? "(sin id)"}: falta 'message' (o alias body/description/text)`);
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new TypeError("SupportTicketRecord debe ser un objeto JSON");
+  const warnings = [];
+  const ticketId = raw.ticketId ?? raw.id ?? null;
+  if (raw.ticketId == null && raw.id != null) warnings.push("campo 'id' no existe en el contrato real; usar 'ticketId'");
+
+  if (typeof raw.message !== "string" || !raw.message.trim()) {
+    throw new TypeError(`Ticket ${ticketId ?? "(sin ticketId)"}: falta 'message' (texto no vacío)`);
   }
-  rec.id = rec.id ?? "UNKNOWN";
-  rec.warnings = [];
-  if (!/^LAB-/.test(String(rec.id))) rec.warnings.push(`id '${rec.id}' no empieza con LAB-`);
-  rec.paid =
-    !!rec.stripePaymentIntentId ||
-    ["paid", "succeeded", "complete"].includes(String(rec.paymentStatus ?? "").toLowerCase());
-  return rec;
+  if (raw.scope !== "avril.lab.support_ticket") warnings.push(`scope '${raw.scope ?? "(ausente)"}' distinto de 'avril.lab.support_ticket'`);
+  if (!TICKET_ID_RE.test(String(ticketId))) warnings.push(`ticketId '${ticketId ?? "(ausente)"}' no cumple LAB-YYYYMMDD-XXXX (4 alfanuméricos mayúsculas)`);
+  let userCategory = raw.category;
+  if (!REAL_CATEGORIES.includes(userCategory)) {
+    warnings.push(`category '${userCategory ?? "(ausente)"}' no es not_ready|refund|other; se trata como 'other'`);
+    userCategory = "other";
+  }
+  if (raw.locale && !["en", "es"].includes(raw.locale)) warnings.push(`locale '${raw.locale}' no es en|es`);
+  const extra = Object.keys(raw).filter((k) => !REAL_FIELDS.includes(k) && k !== "id");
+  if (extra.length) warnings.push(`campos fuera del contrato real (ignorados): ${extra.join(", ")}`);
+
+  return {
+    ticketId: ticketId ?? "UNKNOWN",
+    createdAt: raw.createdAt ?? null,
+    contact: raw.email ?? null,
+    userCategory,
+    message: raw.message,
+    stripeSessionId: raw.stripeSessionId ?? null,
+    labSlug: raw.labSlug ?? null,
+    locale: raw.locale === "en" ? "en" : "es",
+    warnings,
+  };
 }

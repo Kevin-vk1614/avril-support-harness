@@ -1,0 +1,42 @@
+{
+  "ticketId": "LAB-20261029-A008",
+  "mustEscalate": true,
+  "handoffSummary": "[HIGH] LAB-20261029-A008 · data_privacy. Síntoma: ¿Qué datos personales guardan de mí? Quiero que borren mis datos, mi correo es [EMAIL]  Siguiente: Ops/legal responde. Registrar la solicitud; no borrar ni exportar datos con el arnés.",
+  "devHandoff": {
+    "ticketId": "LAB-20261029-A008",
+    "category": "data_privacy",
+    "severity": "high",
+    "symptom": "¿Qué datos personales guardan de mí? Quiero que borren mis datos, mi correo es [EMAIL]",
+    "identifiers": {
+      "stripeSessionId": null,
+      "labSlug": null,
+      "userSelectedCategory": "other",
+      "locale": "es",
+      "createdAt": "2026-10-29T18:00:00.000Z",
+      "contactMasked": "e***@e***.com"
+    },
+    "missingForTriage": [],
+    "hypotheses": [
+      "Solicitud sobre datos personales (acceso/borrado/qué se guarda). No hay política de datos en fuentes confirmadas."
+    ],
+    "nextTechnicalStep": [
+      "Ops/legal responde. Registrar la solicitud; no borrar ni exportar datos con el arnés."
+    ],
+    "runbook": "docs/guides/lab-support-ops.md (repo Lab-Avril-Life)",
+    "doNot": [],
+    "knownFailureIds": [],
+    "notConfirmedTopics": [],
+    "reproducible": "node src/cli.js <ticket.json>  (determinista, sin red)"
+  },
+  "followUpProposal": {
+    "ticketId": "LAB-20261029-A008",
+    "source": "harness",
+    "devHandoff": "[HIGH] LAB-20261029-A008 · data_privacy\nSíntoma: ¿Qué datos personales guardan de mí? Quiero que borren mis datos, mi correo es [EMAIL]\nHipótesis:\n- Solicitud sobre datos personales (acceso/borrado/qué se guarda). No hay política de datos en fuentes confirmadas.\nSiguiente paso:\n- Ops/legal responde. Registrar la solicitud; no borrar ni exportar datos con el arnés.\nRunbook: docs/guides/lab-support-ops.md (repo Lab-Avril-Life)",
+    "customerUpdate": null,
+    "customerUpdateSource": null,
+    "customerUpdateLanguage": "es",
+    "requiresHumanApproval": true,
+    "caution": "PROPUESTA: solo se conocen estos campos de data/support-ticket-follow-up.jsonl (ticketId, devHandoff, customerUpdate, source). El esquema real y los campos de estado/nota interna de ops no se verificaron. La última línea por ticketId gana: no escribir sin fusionar lo que ops ya guardó. El arnés nunca escribe ahí."
+  },
+  "knownFailureMatches": []
+}

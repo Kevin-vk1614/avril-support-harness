@@ -1,0 +1,262 @@
+{
+  "_meta": {
+    "purpose": "Casos de fallas REALES de seats/Lab, derivados de lab-seat-failures.md (post-mortems) y lab-paid-not-ready.md (runbook). Sin hostnames, IPs, rutas de llaves ni tokens (el repo es público).",
+    "note": "Estos casos SIEMPRE escalan. 'respuesta' es un borrador de acuse para que ops lo apruebe; nunca se envía."
+  },
+  "cases": [
+    {
+      "id": "seat-public-https-degraded",
+      "title": "Mi agente está listo, pero mi dirección no abre (error SSL/TLS)",
+      "postMortem": "§7.1, §4 y §5 (capa TLS)",
+      "incidentCodes": [
+        "PUBLIC_PROBE_DEGRADED",
+        "CADDY_TLS_SYNC_FAILED"
+      ],
+      "severity": "medium",
+      "strong": [
+        "error ssl",
+        "err_ssl",
+        "tlsv1",
+        "certificado",
+        "conexion no es privada",
+        "not secure",
+        "no es segura",
+        "no es seguro",
+        "handshake",
+        "ssl error",
+        "tls error",
+        "certificate error",
+        "connection is not private",
+        "certificate"
+      ],
+      "weak": [],
+      "patterns": [],
+      "queVeElCliente": "Pagó y el seat figura listo (en versiones anteriores al 2026-11-01 llegaba a desaparecer a los pocos minutos), pero al abrir su dirección <slug>.avril.life el navegador muestra un error SSL/TLS.",
+      "respuesta": "Tu pago quedó registrado y, por lo que vemos, tu agente está funcionando; lo que tarda es activar la dirección pública segura. Se reintenta automáticamente cada pocos minutos. No necesitas pagar de nuevo. Te avisamos en cuanto abra, o si vemos que hace falta intervenir.",
+      "antesDeEnviar": "Verificar en Admin → Incidentes que el seat esté 'ready' con PUBLIC_PROBE_DEGRADED o CADDY_TLS_SYNC_FAILED.",
+      "cuandoEscalar": "A dev si pasó más de ~5 min (un ciclo de reconcile) y sigue sin abrir, si el incidente NO es PUBLIC_PROBE_DEGRADED/CADDY_TLS_SYNC_FAILED, o si hay un seat 'failed' donde antes estaba 'ready'.",
+      "diagnostico": [
+        "'tlsv1 alert internal error' = Caddy sin bloque para ese hostname; el seat está bien.",
+        "Esperar el reconcile (≤5 min) o re-ejecutarlo; no re-provisionar ni pedir pago otra vez.",
+        "No subir el timeout de la sonda pública: observa, no bloquea."
+      ],
+      "regla": "La sonda pública observa, nunca bloquea: no se destruye un seat sano por un problema del borde HTTPS.",
+      "fuente": "Lab-Avril-Life/docs/guides/lab-seat-failures.md (actualizado 2026-11-01) §7.1, §4 y §5 (capa TLS)"
+    },
+    {
+      "id": "caddy-site-failed",
+      "title": "Pagué y falló al configurar el sitio de mi agente",
+      "postMortem": "§7.2 y regla 2 (validate no es cobertura)",
+      "incidentCodes": [
+        "CADDY_SITE_FAILED"
+      ],
+      "severity": "high",
+      "strong": [
+        "could not be configured",
+        "no se pudo configurar",
+        "configurar el sitio",
+        "caddy"
+      ],
+      "weak": [],
+      "patterns": [],
+      "queVeElCliente": "Pagó; el seat falla ~1 min después de que el contenedor está sano, con un mensaje de que no se pudo configurar el sitio del agente.",
+      "respuesta": "Hubo una falla de configuración de nuestro lado al preparar tu sitio; no es algo que hayas hecho tú. Tu pago quedó registrado. Por favor no pagues de nuevo: lo estamos revisando y te escribimos con el siguiente paso.",
+      "antesDeEnviar": "Confirmar el pago en Stripe con el stripeSessionId del ticket.",
+      "cuandoEscalar": "A dev de inmediato: un Caddyfile roto impide que CUALQUIER seat obtenga sitio. Si hay 2+ tickets iguales, o dominios propios (apex/www) muestran errores TLS, tratarlo como incidente general.",
+      "diagnostico": [
+        "Falla en la capa caddy después de healthcheck OK (~54 s): los contenedores están bien, falla el borde.",
+        "Caddy sigue sirviendo la última config válida en memoria; un archivo roto en disco no se nota hasta el siguiente reload (la siguiente compra).",
+        "Validar con 'caddy validate' el archivo que el launcher realmente escribió Y con el script de inventario de hosts: validate no garantiza que los sitios existan.",
+        "Al restaurar un Caddyfile.bak, comprobar que no falten los bloques de los dominios apex."
+      ],
+      "regla": "Todo cambio al Caddyfile (manual o por script) se valida con caddy validate Y con el inventario de hosts antes de dar el recovery por bueno.",
+      "fuente": "Lab-Avril-Life/docs/guides/lab-seat-failures.md (actualizado 2026-11-01) §7.2 y regla 2 (validate no es cobertura)"
+    },
+    {
+      "id": "poisoned-slug",
+      "title": "Mi compra falla enseguida y cada reintento falla igual",
+      "postMortem": "§7.3 (slug envenenado)",
+      "incidentCodes": [
+        "PROVISION_THREW"
+      ],
+      "severity": "high",
+      "strong": [
+        "permission denied",
+        "eacces",
+        "/tmp/oc-",
+        "rm: cannot remove"
+      ],
+      "weak": [
+        "vuelve a fallar",
+        "falla igual",
+        "otra vez falla",
+        "falla al instante",
+        "fallo al instante",
+        "fails again",
+        "keeps failing",
+        "fails instantly",
+        "failed instantly",
+        "fails immediately"
+      ],
+      "patterns": [],
+      "queVeElCliente": "El intento falla en ~15 s (demasiado rápido para un aprovisionamiento real) con un error de permisos ('Permission denied') sobre una ruta temporal; al reintentar con el mismo nombre falla igual.",
+      "respuesta": "Encontramos un problema de nuestro lado: quedaron restos de un intento anterior que bloquean ese nombre. Los limpiamos nosotros. Por favor no intentes pagar de nuevo hasta que te confirmemos que ya está liberado.",
+      "antesDeEnviar": "Confirmar el pago en Stripe con el stripeSessionId del ticket.",
+      "cuandoEscalar": "A dev: hay que limpiar el directorio del slug en el worker; es permanente hasta que se haga y no se arregla esperando ni reintentando.",
+      "diagnostico": [
+        "Una falla de menos de ~20 s que nombra una ruta /tmp/oc-* son restos con dueño root: no es capacidad, TLS ni RAM.",
+        "No comprar un VPS ni bajar mem_limit.",
+        "Confirmar el slug envenenado listando el directorio de plugins del slug en el worker (aparece root:root).",
+        "Limpiar con sudo rm -rf del directorio del slug (nunca rm como usuario SSH) y luego volver a rentar."
+      ],
+      "regla": "Falla <~20 s con ruta /tmp/oc-* = restos del intento anterior, no un problema de capacidad.",
+      "fuente": "Lab-Avril-Life/docs/guides/lab-seat-failures.md (actualizado 2026-11-01) §7.3 (slug envenenado)"
+    },
+    {
+      "id": "pids-starvation-chat-drops",
+      "title": "El panel carga, pero el chat se cae (WebSocket 1006)",
+      "postMortem": "§7.4 (agotamiento de pids)",
+      "incidentCodes": [],
+      "severity": "medium",
+      "strong": [
+        "websocket",
+        "1006",
+        "unhealthy",
+        "chat se cae",
+        "chat se desconecta",
+        "chat no responde",
+        "se desconecta el chat",
+        "no responde el chat",
+        "chat keeps dropping",
+        "chat disconnects",
+        "chat drops",
+        "chat is not responding",
+        "chat not responding",
+        "chat stops responding"
+      ],
+      "weak": [],
+      "patterns": [],
+      "queVeElCliente": "El Control UI abre, pero el chat se desconecta ('WebSocket 1006') o no responde; por dentro el contenedor figura unhealthy aunque el gateway responde.",
+      "respuesta": "Tu panel abre pero el chat se corta: es un problema de nuestro lado, no de tu configuración. Lo estamos revisando en el servidor y te avisamos. No necesitas cambiar nada de tu parte.",
+      "antesDeEnviar": "Revisar pids.current / pids.max del contenedor del seat.",
+      "cuandoEscalar": "A dev si ocurre después del arreglo del 2026-11-01 (sería una regresión) o si varios seats tienen el mismo síntoma. Revisar pids antes de tocar memoria.",
+      "diagnostico": [
+        "unhealthy con healthz funcionando desde fuera = agotamiento de pids/threads, no falla del gateway.",
+        "Revisar pids.current / pids.max y pids.events.max del contenedor.",
+        "No subir mem_limit: la fuga fue de procesos, no de bytes, y rompe el candado de capacidad (§3).",
+        "Causa del caso original: startDeviceAutoApprove sin guardia inFlight + timeout remoto de 120 s (corregido con guardia, intervalo de 20 s y timeout de 15 s)."
+      ],
+      "regla": "Un contenedor unhealthy con healthz externo funcionando es falta de pids, no una falla del gateway.",
+      "fuente": "Lab-Avril-Life/docs/guides/lab-seat-failures.md (actualizado 2026-11-01) §7.4 (agotamiento de pids)"
+    },
+    {
+      "id": "funnel-gap-closed-tab",
+      "title": "Pagué, cerré la pestaña y no me aparece nada",
+      "postMortem": "§2 (el embudo no es un registro de fallos) y evidencia faltante de §7.1",
+      "incidentCodes": [],
+      "severity": "high",
+      "strong": [
+        "cerre la pestana",
+        "cerre la pagina",
+        "cerre el navegador",
+        "cerre la ventana",
+        "se me cerro la pestana",
+        "closed the tab",
+        "closed the page",
+        "closed the browser",
+        "closed the window"
+      ],
+      "weak": [],
+      "patterns": [],
+      "queVeElCliente": "Pagó y cerró la página antes de que terminara; después no ve ningún agente ni mensaje de error.",
+      "respuesta": "Tu pago quedó registrado. Vamos a revisar qué pasó con tu agente en nuestro registro de incidentes y te escribimos con el estado. Por favor no pagues de nuevo.",
+      "antesDeEnviar": "Confirmar el pago en Stripe con el stripeSessionId del ticket.",
+      "cuandoEscalar": "A dev si Incidentes muestra un fallo real, o si no hay ningún registro del seat. Un fallo con la pestaña cerrada no aparece en el embudo.",
+      "diagnostico": [
+        "provision_fail se escribe de forma perezosa cuando /api/rentals sondea con la pestaña abierta; si se cierra, el embudo (pay-ready.jsonl) se queda en payment_verified.",
+        "Para fallos, confiar en incidents.jsonl (Admin → Incidentes), no en el embudo.",
+        "Cada incidente trae logTail inline (últimas 40 líneas)."
+      ],
+      "regla": "El embudo no es un registro de fallos: se consulta Incidentes.",
+      "fuente": "Lab-Avril-Life/docs/guides/lab-seat-failures.md (actualizado 2026-11-01) §2 (el embudo no es un registro de fallos) y evidencia faltante de §7.1"
+    },
+    {
+      "id": "lab-site-502-deploy",
+      "title": "lab.avril.life no carga o devuelve 502",
+      "postMortem": "§8 (deploy)",
+      "incidentCodes": [],
+      "severity": "critical",
+      "strong": [],
+      "weak": [],
+      "patterns": [
+        "lab\\.avril\\.life.*(502|caid|no carga|no abre|no funciona|down|not loading|bad gateway)"
+      ],
+      "queVeElCliente": "El sitio lab.avril.life devuelve 502 o no carga, para todos los compradores.",
+      "respuesta": "Estamos con una interrupción del sitio y el equipo ya la está atendiendo. Gracias por avisar.",
+      "antesDeEnviar": "Verificar el estado HTTP público de lab.avril.life.",
+      "cuandoEscalar": "A dev de inmediato: afecta a todos los compradores. Si fue por un deploy, el script hace rollback automático; si persiste, no hacer 'pm2 restart' a ciegas.",
+      "diagnostico": [
+        "'online' en pm2 no es salud: un build roto corre pero sirve 502.",
+        "El deploy actual restaura .next.prev y reinicia pm2 ante cualquier salida distinta de 0 (verificado el 2026-11-01).",
+        "Verificar con el estado HTTP público, no con pm2 status."
+      ],
+      "regla": "Solo el estado HTTP público indica salud; 'online' no lo es.",
+      "fuente": "Lab-Avril-Life/docs/guides/lab-seat-failures.md (actualizado 2026-11-01) §8 (deploy)"
+    },
+    {
+      "id": "paid-waitlist-no-capacity",
+      "title": "Pagué y me aparece lista de espera / sin capacidad",
+      "postMortem": "runbook paid-not-ready: regla, síntomas y pasos 4–5",
+      "incidentCodes": [
+        "NO_CAPACITY"
+      ],
+      "severity": "high",
+      "requirePaid": true,
+      "strong": [
+        "lista de espera",
+        "waitlist",
+        "sin capacidad",
+        "no capacity"
+      ],
+      "weak": [],
+      "patterns": [],
+      "queVeElCliente": "Pagó y la pantalla de éxito (/renta/exito) se queda en instalación, falla o lista de espera; 'Mis agentes' aparece vacío o en estado unknown/failed.",
+      "respuesta": "Tu pago está registrado. No vuelvas a pagar. Estamos reparando el laboratorio; avísanos con el session_id de Stripe si tarda más de unos minutos.",
+      "antesDeEnviar": "Confirmar en Stripe que la sesión (cs_…) esté pagada.",
+      "cuandoEscalar": "A ops/dev ahora: sin capacidad hay que liberar un seat o esperar capacidad; nunca volver a cobrar.",
+      "diagnostico": [
+        "Consultar la capacidad de los launchers (/api/capacity): 401 = token distinto entre Lab y los launchers; available: 0 = lista de espera.",
+        "launchStatus=no_capacity en la metadata de la sesión: esperar capacidad; /api/rentals puede reintentar la reparación.",
+        "No abrir un segundo Checkout para la misma sesión: reparar o dejar en lista de espera."
+      ],
+      "regla": "Nunca pedir al comprador que pague otra vez por el mismo session_id: reparar o lista de espera.",
+      "fuente": "Lab-Avril-Life/docs/guides/lab-paid-not-ready.md (2026-10-16) regla bloqueada, síntomas y pasos 4–5"
+    },
+    {
+      "id": "launch-failed-after-pay",
+      "title": "Me salió 'Launch failed' unos segundos después de pagar",
+      "postMortem": "runbook paid-not-ready: paso 6",
+      "incidentCodes": [],
+      "severity": "high",
+      "requirePaid": true,
+      "strong": [
+        "launch failed",
+        "fallo el lanzamiento",
+        "error al lanzar"
+      ],
+      "weak": [],
+      "patterns": [],
+      "queVeElCliente": "Pagó y unos 15 s después ve 'Launch failed', aunque el contenedor llegó a levantarse.",
+      "respuesta": "Tu pago está registrado. No vuelvas a pagar. Estamos reparando el laboratorio; avísanos con el session_id de Stripe si tarda más de unos minutos.",
+      "antesDeEnviar": "Confirmar en Stripe que la sesión (cs_…) esté pagada.",
+      "cuandoEscalar": "A dev: revisar el log de errores del launcher con el deployment id. No relanzar hasta confirmar que no existe un seat duplicado.",
+      "diagnostico": [
+        "Causas comunes (runbook paso 6): script de dedupe del Caddyfile ausente (redeploy de los launchers); 'Caddy/TLS setup failed' (ya corregido: el seat continúa y Caddy se reconcilia al arrancar el launcher); 'no SSH key worked' (revisar la llave SSH configurada para el worker).",
+        "No tratar success:false durante 'provisioning' como seat faltante ni volver a llamar launchCompany: provocó un doble launch y un falso error de SSH.",
+        "Si el contenedor murió pero la metadata tiene id: destruir y relanzar UNA sola vez de forma controlada (mismo pago)."
+      ],
+      "regla": "Un fallo de lanzamiento tras el pago se repara con el mismo pago; no se relanza a ciegas.",
+      "fuente": "Lab-Avril-Life/docs/guides/lab-paid-not-ready.md (2026-10-16) paso 6"
+    }
+  ]
+}

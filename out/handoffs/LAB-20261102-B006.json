@@ -1,0 +1,72 @@
+{
+  "ticketId": "LAB-20261102-B006",
+  "mustEscalate": true,
+  "handoffSummary": "[CRITICAL] LAB-20261102-B006 · access_failure. Síntoma: lab.avril.life me da 502 Bad Gateway, no carga el sitio.  Posible falla conocida: lab-site-502-deploy. Siguiente: Verificar estado del seat y URL del Control UI (patrón *.avril.life).",
+  "devHandoff": {
+    "ticketId": "LAB-20261102-B006",
+    "category": "access_failure",
+    "severity": "critical",
+    "symptom": "lab.avril.life me da 502 Bad Gateway, no carga el sitio.",
+    "identifiers": {
+      "stripeSessionId": null,
+      "labSlug": null,
+      "userSelectedCategory": "other",
+      "locale": "es",
+      "createdAt": "2026-11-02T16:00:00.000Z",
+      "contactMasked": "c***@e***.com"
+    },
+    "missingForTriage": [],
+    "hypotheses": [
+      "Error TLS ('tlsv1 alert internal error') = Caddy sin bloque para el hostname; el seat está sano y el reconcile lo repara en ≤5 min (§5).",
+      "Contenedor unhealthy con healthz externo funcionando = agotamiento de pids, no falla del gateway (§7.4).",
+      "Control UI no disponible (health check, Caddy, subdominio *.avril.life) o seat no ready; falla de sign-in con wallet."
+    ],
+    "nextTechnicalStep": [
+      "Verificar estado del seat y URL del Control UI (patrón *.avril.life).",
+      "Probar sign-in con wallet en entorno de prueba; no pedir credenciales al comprador."
+    ],
+    "runbook": "docs/guides/lab-support-ops.md (repo Lab-Avril-Life)",
+    "doNot": [],
+    "knownFailureIds": [
+      "lab-site-502-deploy"
+    ],
+    "notConfirmedTopics": [],
+    "reproducible": "node src/cli.js <ticket.json>  (determinista, sin red)"
+  },
+  "followUpProposal": {
+    "ticketId": "LAB-20261102-B006",
+    "source": "harness",
+    "devHandoff": "[CRITICAL] LAB-20261102-B006 · access_failure\nSíntoma: lab.avril.life me da 502 Bad Gateway, no carga el sitio.\nPosible falla conocida: lab-site-502-deploy\nHipótesis:\n- Error TLS ('tlsv1 alert internal error') = Caddy sin bloque para el hostname; el seat está sano y el reconcile lo repara en ≤5 min (§5).\n- Contenedor unhealthy con healthz externo funcionando = agotamiento de pids, no falla del gateway (§7.4).\n- Control UI no disponible (health check, Caddy, subdominio *.avril.life) o seat no ready; falla de sign-in con wallet.\nSiguiente paso:\n- Verificar estado del seat y URL del Control UI (patrón *.avril.life).\n- Probar sign-in con wallet en entorno de prueba; no pedir credenciales al comprador.\nRunbook: docs/guides/lab-support-ops.md (repo Lab-Avril-Life)",
+    "customerUpdate": "Estamos con una interrupción del sitio y el equipo ya la está atendiendo. Gracias por avisar.",
+    "customerUpdateSource": "failure:lab-site-502-deploy",
+    "customerUpdateLanguage": "es",
+    "requiresHumanApproval": true,
+    "caution": "PROPUESTA: solo se conocen estos campos de data/support-ticket-follow-up.jsonl (ticketId, devHandoff, customerUpdate, source). El esquema real y los campos de estado/nota interna de ops no se verificaron. La última línea por ticketId gana: no escribir sin fusionar lo que ops ya guardó. El arnés nunca escribe ahí."
+  },
+  "knownFailureMatches": [
+    {
+      "id": "lab-site-502-deploy",
+      "title": "lab.avril.life no carga o devuelve 502",
+      "postMortem": "§8 (deploy)",
+      "incidentCodes": [],
+      "severity": "critical",
+      "queVeElCliente": "El sitio lab.avril.life devuelve 502 o no carga, para todos los compradores.",
+      "replyDraft": {
+        "text": "Estamos con una interrupción del sitio y el equipo ya la está atendiendo. Gracias por avisar.",
+        "antesDeEnviar": "Verificar el estado HTTP público de lab.avril.life.",
+        "replyLanguage": "es",
+        "needsTranslation": false,
+        "requiresHumanApproval": true,
+        "sendStatus": "NOT_SENT"
+      },
+      "cuandoEscalar": "A dev de inmediato: afecta a todos los compradores. Si fue por un deploy, el script hace rollback automático; si persiste, no hacer 'pm2 restart' a ciegas.",
+      "diagnostico": [
+        "'online' en pm2 no es salud: un build roto corre pero sirve 502.",
+        "El deploy actual restaura .next.prev y reinicia pm2 ante cualquier salida distinta de 0 (verificado el 2026-11-01).",
+        "Verificar con el estado HTTP público, no con pm2 status."
+      ],
+      "regla": "Solo el estado HTTP público indica salud; 'online' no lo es.",
+      "fuente": "Lab-Avril-Life/docs/guides/lab-seat-failures.md (actualizado 2026-11-01) §8 (deploy)"
+    }
+  ]
+}

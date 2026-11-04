@@ -1,0 +1,73 @@
+{
+  "ticketId": "LAB-20261102-B004",
+  "mustEscalate": true,
+  "handoffSummary": "[MEDIUM] LAB-20261102-B004 · access_failure. session=cs_test_K4 slug=seat-k4. Síntoma: Mi panel carga pero el chat se cae con WebSocket 1006 cada vez que escribo.  Posible falla conocida: pids-starvation-chat-drops. Siguiente: Verificar estado del seat y URL del Control UI (patrón *.avril.life).",
+  "devHandoff": {
+    "ticketId": "LAB-20261102-B004",
+    "category": "access_failure",
+    "severity": "medium",
+    "symptom": "Mi panel carga pero el chat se cae con WebSocket 1006 cada vez que escribo.",
+    "identifiers": {
+      "stripeSessionId": "cs_test_K4",
+      "labSlug": "seat-k4",
+      "userSelectedCategory": "other",
+      "locale": "es",
+      "createdAt": "2026-11-02T14:00:00.000Z",
+      "contactMasked": "c***@e***.com"
+    },
+    "missingForTriage": [],
+    "hypotheses": [
+      "Error TLS ('tlsv1 alert internal error') = Caddy sin bloque para el hostname; el seat está sano y el reconcile lo repara en ≤5 min (§5).",
+      "Contenedor unhealthy con healthz externo funcionando = agotamiento de pids, no falla del gateway (§7.4).",
+      "Control UI no disponible (health check, Caddy, subdominio *.avril.life) o seat no ready; falla de sign-in con wallet."
+    ],
+    "nextTechnicalStep": [
+      "Verificar estado del seat y URL del Control UI (patrón *.avril.life).",
+      "Probar sign-in con wallet en entorno de prueba; no pedir credenciales al comprador."
+    ],
+    "runbook": "docs/guides/lab-support-ops.md (repo Lab-Avril-Life)",
+    "doNot": [],
+    "knownFailureIds": [
+      "pids-starvation-chat-drops"
+    ],
+    "notConfirmedTopics": [],
+    "reproducible": "node src/cli.js <ticket.json>  (determinista, sin red)"
+  },
+  "followUpProposal": {
+    "ticketId": "LAB-20261102-B004",
+    "source": "harness",
+    "devHandoff": "[MEDIUM] LAB-20261102-B004 · access_failure\nSíntoma: Mi panel carga pero el chat se cae con WebSocket 1006 cada vez que escribo.\nIds: session=cs_test_K4 slug=seat-k4\nPosible falla conocida: pids-starvation-chat-drops\nHipótesis:\n- Error TLS ('tlsv1 alert internal error') = Caddy sin bloque para el hostname; el seat está sano y el reconcile lo repara en ≤5 min (§5).\n- Contenedor unhealthy con healthz externo funcionando = agotamiento de pids, no falla del gateway (§7.4).\n- Control UI no disponible (health check, Caddy, subdominio *.avril.life) o seat no ready; falla de sign-in con wallet.\nSiguiente paso:\n- Verificar estado del seat y URL del Control UI (patrón *.avril.life).\n- Probar sign-in con wallet en entorno de prueba; no pedir credenciales al comprador.\nRunbook: docs/guides/lab-support-ops.md (repo Lab-Avril-Life)",
+    "customerUpdate": "Tu panel abre pero el chat se corta: es un problema de nuestro lado, no de tu configuración. Lo estamos revisando en el servidor y te avisamos. No necesitas cambiar nada de tu parte.",
+    "customerUpdateSource": "failure:pids-starvation-chat-drops",
+    "customerUpdateLanguage": "es",
+    "requiresHumanApproval": true,
+    "caution": "PROPUESTA: solo se conocen estos campos de data/support-ticket-follow-up.jsonl (ticketId, devHandoff, customerUpdate, source). El esquema real y los campos de estado/nota interna de ops no se verificaron. La última línea por ticketId gana: no escribir sin fusionar lo que ops ya guardó. El arnés nunca escribe ahí."
+  },
+  "knownFailureMatches": [
+    {
+      "id": "pids-starvation-chat-drops",
+      "title": "El panel carga, pero el chat se cae (WebSocket 1006)",
+      "postMortem": "§7.4 (agotamiento de pids)",
+      "incidentCodes": [],
+      "severity": "medium",
+      "queVeElCliente": "El Control UI abre, pero el chat se desconecta ('WebSocket 1006') o no responde; por dentro el contenedor figura unhealthy aunque el gateway responde.",
+      "replyDraft": {
+        "text": "Tu panel abre pero el chat se corta: es un problema de nuestro lado, no de tu configuración. Lo estamos revisando en el servidor y te avisamos. No necesitas cambiar nada de tu parte.",
+        "antesDeEnviar": "Revisar pids.current / pids.max del contenedor del seat.",
+        "replyLanguage": "es",
+        "needsTranslation": false,
+        "requiresHumanApproval": true,
+        "sendStatus": "NOT_SENT"
+      },
+      "cuandoEscalar": "A dev si ocurre después del arreglo del 2026-11-01 (sería una regresión) o si varios seats tienen el mismo síntoma. Revisar pids antes de tocar memoria.",
+      "diagnostico": [
+        "unhealthy con healthz funcionando desde fuera = agotamiento de pids/threads, no falla del gateway.",
+        "Revisar pids.current / pids.max y pids.events.max del contenedor.",
+        "No subir mem_limit: la fuga fue de procesos, no de bytes, y rompe el candado de capacidad (§3).",
+        "Causa del caso original: startDeviceAutoApprove sin guardia inFlight + timeout remoto de 120 s (corregido con guardia, intervalo de 20 s y timeout de 15 s)."
+      ],
+      "regla": "Un contenedor unhealthy con healthz externo funcionando es falta de pids, no una falla del gateway.",
+      "fuente": "Lab-Avril-Life/docs/guides/lab-seat-failures.md (actualizado 2026-11-01) §7.4 (agotamiento de pids)"
+    }
+  ]
+}

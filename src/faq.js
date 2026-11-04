@@ -8,7 +8,7 @@ export const FAQ = JSON.parse(readFileSync(FAQ_PATH, "utf8"));
 const esc = (k) => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 // Prefijo con límite de palabra (permite raíces: "garantiz"). Keywords cortas (<=4) exigen palabra completa,
 // para que "sla" no coincida con "isla" ni "mcp" con texto arbitrario.
-const countHits = (text, kws) =>
+export const countHits = (text, kws) =>
   kws.filter((k) => {
     const n = norm(k);
     const re = new RegExp(`(^|[^a-z0-9])${esc(n)}${n.length <= 4 ? "($|[^a-z0-9])" : ""}`);

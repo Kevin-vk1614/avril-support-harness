@@ -3,7 +3,7 @@
     "purpose": "Base FAQ corta. SOLO afirmaciones confirmadas en documentos existentes del repo AvrilContextProtocol-MCP.",
     "rule": "Si un tema no está aquí ni en notConfirmed, el arnés no responde: escala a humano.",
     "lastVerifiedAgainstSources": "2026-10-20 (QA Ciclo 1) y 2026-10-02 (CURRENT-STATE / Reality Audit)",
-    "verifyBeforeSend": "Precios leídos de la landing el 2026-10-20 sin probar Stripe; un humano confirma moneda/vigencia antes de enviar."
+    "verifyBeforeSend": "Precios y modelo de créditos/BYOK difieren entre el QA (2026-10-20) y la página (2026-11-01); un humano confirma antes de enviar."
   },
   "entries": [
     {
@@ -26,11 +26,12 @@
         "duracion",
         "plan"
       ],
-      "answer": "Lab tiene tres planes con precio de lista: Day Pass $6 por 48 horas, Trial $15 por 7 días y Monthly $29 por 30 días. El hosting está incluido; el modelo es BYOK (traes tu propia API key).",
-      "caveat": "Precios leídos de la landing el 2026-10-20; el checkout de Stripe aún no se ha probado. Confirmar moneda y vigencia antes de enviar.",
+      "answer": "Lab tiene tres planes con precio de lista: Day Pass $6 por 48 horas, Trial $15 por 7 días y Monthly $29 por 30 días. El hosting está incluido, con créditos iniciales para empezar; traer tu propia API key de modelo (BYOK) es opcional.",
+      "caveat": "El informe QA (2026-10-20) describía el modelo como BYOK obligatorio; la página actual dice créditos iniciales + BYOK opcional. Confirmar con el equipo, además de moneda/vigencia, antes de enviar.",
       "sources": [
         "Informe 'QA Lab Fricción — Ciclo 1' (Claude Doc, 2026-10-20, lab.avril.life) — Caso 1 (precios) y Caso 2 (e47)",
-        "AVRIL-REALITY-AUDIT-2026-10-02.md ('$15 / 7d default')"
+        "AVRIL-REALITY-AUDIT-2026-10-02.md ('$15 / 7d default')",
+        "Metadescripción de lab.avril.life (leída 2026-11-01): 'One-click OpenClaw or Hermes from $6 / 48h ... starter OOTB credits included; BYOK optional'"
       ]
     },
     {
@@ -106,10 +107,12 @@
         "incluye el modelo",
         "api del modelo"
       ],
-      "answer": "BYOK significa 'bring your own key': el hosting está incluido, pero el modelo lo pones tú con tu propia API key de modelo.",
+      "answer": "BYOK significa 'bring your own key': usar tu propia API key de modelo. En la página actual es opcional: el plan incluye créditos iniciales de arranque.",
       "sources": [
-        "Informe 'QA Lab Fricción — Ciclo 1' (Claude Doc, 2026-10-20, lab.avril.life) — Caso 2 (e47, e85)"
-      ]
+        "Informe 'QA Lab Fricción — Ciclo 1' (Claude Doc, 2026-10-20, lab.avril.life) — Caso 2 (e47, e85)",
+        "Metadescripción de lab.avril.life (leída 2026-11-01): 'One-click OpenClaw or Hermes from $6 / 48h ... starter OOTB credits included; BYOK optional'"
+      ],
+      "caveat": "Contradice el informe QA del 2026-10-20 (BYOK obligatorio); confirmar con el equipo antes de enviar."
     },
     {
       "id": "faq-harnesses",

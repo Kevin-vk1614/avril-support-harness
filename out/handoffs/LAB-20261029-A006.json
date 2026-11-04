@@ -1,0 +1,45 @@
+{
+  "ticketId": "LAB-20261029-A006",
+  "mustEscalate": true,
+  "handoffSummary": "[MEDIUM] LAB-20261029-A006 · access_failure. session=cs_test_S06aBcD slug=seat-s06. Síntoma: Mi Control UI da error 502 y no puedo entrar desde ayer.  Siguiente: Verificar estado del seat y URL del Control UI (patrón *.avril.life).",
+  "devHandoff": {
+    "ticketId": "LAB-20261029-A006",
+    "category": "access_failure",
+    "severity": "medium",
+    "symptom": "Mi Control UI da error 502 y no puedo entrar desde ayer.",
+    "identifiers": {
+      "stripeSessionId": "cs_test_S06aBcD",
+      "labSlug": "seat-s06",
+      "userSelectedCategory": "other",
+      "locale": "es",
+      "createdAt": "2026-10-29T16:00:00.000Z",
+      "contactMasked": "s***@e***.com"
+    },
+    "missingForTriage": [],
+    "hypotheses": [
+      "Error TLS ('tlsv1 alert internal error') = Caddy sin bloque para el hostname; el seat está sano y el reconcile lo repara en ≤5 min (§5).",
+      "Contenedor unhealthy con healthz externo funcionando = agotamiento de pids, no falla del gateway (§7.4).",
+      "Control UI no disponible (health check, Caddy, subdominio *.avril.life) o seat no ready; falla de sign-in con wallet."
+    ],
+    "nextTechnicalStep": [
+      "Verificar estado del seat y URL del Control UI (patrón *.avril.life).",
+      "Probar sign-in con wallet en entorno de prueba; no pedir credenciales al comprador."
+    ],
+    "runbook": "docs/guides/lab-support-ops.md (repo Lab-Avril-Life)",
+    "doNot": [],
+    "knownFailureIds": [],
+    "notConfirmedTopics": [],
+    "reproducible": "node src/cli.js <ticket.json>  (determinista, sin red)"
+  },
+  "followUpProposal": {
+    "ticketId": "LAB-20261029-A006",
+    "source": "harness",
+    "devHandoff": "[MEDIUM] LAB-20261029-A006 · access_failure\nSíntoma: Mi Control UI da error 502 y no puedo entrar desde ayer.\nIds: session=cs_test_S06aBcD slug=seat-s06\nHipótesis:\n- Error TLS ('tlsv1 alert internal error') = Caddy sin bloque para el hostname; el seat está sano y el reconcile lo repara en ≤5 min (§5).\n- Contenedor unhealthy con healthz externo funcionando = agotamiento de pids, no falla del gateway (§7.4).\n- Control UI no disponible (health check, Caddy, subdominio *.avril.life) o seat no ready; falla de sign-in con wallet.\nSiguiente paso:\n- Verificar estado del seat y URL del Control UI (patrón *.avril.life).\n- Probar sign-in con wallet en entorno de prueba; no pedir credenciales al comprador.\nRunbook: docs/guides/lab-support-ops.md (repo Lab-Avril-Life)",
+    "customerUpdate": null,
+    "customerUpdateSource": null,
+    "customerUpdateLanguage": "es",
+    "requiresHumanApproval": true,
+    "caution": "PROPUESTA: solo se conocen estos campos de data/support-ticket-follow-up.jsonl (ticketId, devHandoff, customerUpdate, source). El esquema real y los campos de estado/nota interna de ops no se verificaron. La última línea por ticketId gana: no escribir sin fusionar lo que ops ya guardó. El arnés nunca escribe ahí."
+  },
+  "knownFailureMatches": []
+}

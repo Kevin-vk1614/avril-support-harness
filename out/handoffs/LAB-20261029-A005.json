@@ -1,0 +1,44 @@
+{
+  "ticketId": "LAB-20261029-A005",
+  "mustEscalate": true,
+  "handoffSummary": "[HIGH] LAB-20261029-A005 · refund. session=cs_test_S05aBcD slug=seat-s05 elegida=refund. Síntoma: Quiero un reembolso, ya no quiero el trial. Pagué ayer.  Siguiente: Ops verifica el cobro en Stripe con el stripeSessionId de este handoff (solo lectura).",
+  "devHandoff": {
+    "ticketId": "LAB-20261029-A005",
+    "category": "refund",
+    "severity": "high",
+    "symptom": "Quiero un reembolso, ya no quiero el trial. Pagué ayer.",
+    "identifiers": {
+      "stripeSessionId": "cs_test_S05aBcD",
+      "labSlug": "seat-s05",
+      "userSelectedCategory": "refund",
+      "locale": "es",
+      "createdAt": "2026-10-29T15:00:00.000Z",
+      "contactMasked": "p***@e***.com"
+    },
+    "missingForTriage": [],
+    "hypotheses": [
+      "Solicitud de reembolso. No hay política de reembolso en las fuentes confirmadas."
+    ],
+    "nextTechnicalStep": [
+      "Ops verifica el cobro en Stripe con el stripeSessionId de este handoff (solo lectura).",
+      "Revisar si el entorno llegó a estar 'ready' antes de decidir.",
+      "Decisión y ejecución del reembolso: humano en Stripe. El arnés no procesa pagos ni promete reembolsos."
+    ],
+    "runbook": "docs/guides/lab-support-ops.md (repo Lab-Avril-Life)",
+    "doNot": [],
+    "knownFailureIds": [],
+    "notConfirmedTopics": [],
+    "reproducible": "node src/cli.js <ticket.json>  (determinista, sin red)"
+  },
+  "followUpProposal": {
+    "ticketId": "LAB-20261029-A005",
+    "source": "harness",
+    "devHandoff": "[HIGH] LAB-20261029-A005 · refund\nSíntoma: Quiero un reembolso, ya no quiero el trial. Pagué ayer.\nIds: session=cs_test_S05aBcD slug=seat-s05 elegida=refund\nHipótesis:\n- Solicitud de reembolso. No hay política de reembolso en las fuentes confirmadas.\nSiguiente paso:\n- Ops verifica el cobro en Stripe con el stripeSessionId de este handoff (solo lectura).\n- Revisar si el entorno llegó a estar 'ready' antes de decidir.\n- Decisión y ejecución del reembolso: humano en Stripe. El arnés no procesa pagos ni promete reembolsos.\nRunbook: docs/guides/lab-support-ops.md (repo Lab-Avril-Life)",
+    "customerUpdate": null,
+    "customerUpdateSource": null,
+    "customerUpdateLanguage": "es",
+    "requiresHumanApproval": true,
+    "caution": "PROPUESTA: solo se conocen estos campos de data/support-ticket-follow-up.jsonl (ticketId, devHandoff, customerUpdate, source). El esquema real y los campos de estado/nota interna de ops no se verificaron. La última línea por ticketId gana: no escribir sin fusionar lo que ops ya guardó. El arnés nunca escribe ahí."
+  },
+  "knownFailureMatches": []
+}

@@ -1,0 +1,86 @@
+{
+  "ticketId": "LAB-20261102-B007",
+  "mustEscalate": true,
+  "handoffSummary": "[HIGH] LAB-20261102-B007 · paid_no_agent (+access_failure,topic_not_confirmed). session=cs_test_K7. Síntoma: Pagué y en la pantalla de éxito me sale lista de espera, no me dan mi agente.  Posible falla conocida: paid-waitlist-no-capacity. Siguiente: Seguir el runbook docs/guides/lab-paid-not-ready.md (repo Lab-Avril-Life): confirmar el pago, el webhook (2xx) y la metadata (deploymentId).",
+  "devHandoff": {
+    "ticketId": "LAB-20261102-B007",
+    "category": "paid_no_agent",
+    "severity": "high",
+    "symptom": "Pagué y en la pantalla de éxito me sale lista de espera, no me dan mi agente.",
+    "identifiers": {
+      "stripeSessionId": "cs_test_K7",
+      "labSlug": null,
+      "userSelectedCategory": "other",
+      "locale": "es",
+      "createdAt": "2026-11-02T17:00:00.000Z",
+      "contactMasked": "c***@e***.com"
+    },
+    "missingForTriage": [],
+    "hypotheses": [
+      "La metadata de la sesión no recibió deploymentId (webhook no procesado): la ruta /api/rentals?repair debería lanzar una sola vez (runbook paso 5).",
+      "El comprador cerró la pestaña: provision_fail no llegó al embudo; el fallo está solo en incidents.jsonl (lab-seat-failures.md §2).",
+      "Mapeo owner→agente frágil (persistencia en JSON de owner-agents) o wallet distinta a la del pago (Reality Audit 2026-10-02)."
+    ],
+    "nextTechnicalStep": [
+      "Seguir el runbook docs/guides/lab-paid-not-ready.md (repo Lab-Avril-Life): confirmar el pago, el webhook (2xx) y la metadata (deploymentId).",
+      "Buscar el seat y sus incidentes en Admin → Incidentes por stripeSessionId/labSlug antes de asumir que no se creó.",
+      "Comparar la wallet del pago vs. la de la sesión del comprador (el ticket no guarda wallet)."
+    ],
+    "runbook": "docs/guides/lab-paid-not-ready.md (repo Lab-Avril-Life)",
+    "doNot": [
+      "No abrir un segundo Checkout para el mismo session_id: reparar o lista de espera; nunca pedir que paguen otra vez.",
+      "No pegar contratos del wizard, modelos del CEO ni volcados crudos de Zod del launcher en chat o UI.",
+      "No rotar STRIPE_WEBHOOK_SECRET sin actualizar el env de Lab y reiniciar.",
+      "No tratar success:false del launcher durante 'provisioning' como seat faltante ni llamar launchCompany otra vez (doble launch)."
+    ],
+    "knownFailureIds": [
+      "paid-waitlist-no-capacity"
+    ],
+    "notConfirmedTopics": [
+      {
+        "id": "nc-capacity-waitlist",
+        "note": "La página no muestra contador de lugares ni waitlist; solo el plan Monthly menciona un tope de capacidad. No prometer disponibilidad.",
+        "source": "Informe 'QA Lab Fricción — Ciclo 1' (Claude Doc, 2026-10-20, lab.avril.life) — Caso 4 (e79)"
+      }
+    ],
+    "reproducible": "node src/cli.js <ticket.json>  (determinista, sin red)"
+  },
+  "followUpProposal": {
+    "ticketId": "LAB-20261102-B007",
+    "source": "harness",
+    "devHandoff": "[HIGH] LAB-20261102-B007 · paid_no_agent (+access_failure,topic_not_confirmed)\nSíntoma: Pagué y en la pantalla de éxito me sale lista de espera, no me dan mi agente.\nIds: session=cs_test_K7\nPosible falla conocida: paid-waitlist-no-capacity\nHipótesis:\n- La metadata de la sesión no recibió deploymentId (webhook no procesado): la ruta /api/rentals?repair debería lanzar una sola vez (runbook paso 5).\n- El comprador cerró la pestaña: provision_fail no llegó al embudo; el fallo está solo en incidents.jsonl (lab-seat-failures.md §2).\n- Mapeo owner→agente frágil (persistencia en JSON de owner-agents) o wallet distinta a la del pago (Reality Audit 2026-10-02).\nSiguiente paso:\n- Seguir el runbook docs/guides/lab-paid-not-ready.md (repo Lab-Avril-Life): confirmar el pago, el webhook (2xx) y la metadata (deploymentId).\n- Buscar el seat y sus incidentes en Admin → Incidentes por stripeSessionId/labSlug antes de asumir que no se creó.\n- Comparar la wallet del pago vs. la de la sesión del comprador (el ticket no guarda wallet).\nNo hacer:\n- No abrir un segundo Checkout para el mismo session_id: reparar o lista de espera; nunca pedir que paguen otra vez.\n- No pegar contratos del wizard, modelos del CEO ni volcados crudos de Zod del launcher en chat o UI.\n- No rotar STRIPE_WEBHOOK_SECRET sin actualizar el env de Lab y reiniciar.\n- No tratar success:false del launcher durante 'provisioning' como seat faltante ni llamar launchCompany otra vez (doble launch).\nRunbook: docs/guides/lab-paid-not-ready.md (repo Lab-Avril-Life)",
+    "customerUpdate": "Tu pago está registrado. No vuelvas a pagar. Estamos reparando el laboratorio; avísanos con el session_id de Stripe si tarda más de unos minutos.",
+    "customerUpdateSource": "runbook:lab-paid-not-ready",
+    "customerUpdateLanguage": "es",
+    "requiresHumanApproval": true,
+    "caution": "PROPUESTA: solo se conocen estos campos de data/support-ticket-follow-up.jsonl (ticketId, devHandoff, customerUpdate, source). El esquema real y los campos de estado/nota interna de ops no se verificaron. La última línea por ticketId gana: no escribir sin fusionar lo que ops ya guardó. El arnés nunca escribe ahí."
+  },
+  "knownFailureMatches": [
+    {
+      "id": "paid-waitlist-no-capacity",
+      "title": "Pagué y me aparece lista de espera / sin capacidad",
+      "postMortem": "runbook paid-not-ready: regla, síntomas y pasos 4–5",
+      "incidentCodes": [
+        "NO_CAPACITY"
+      ],
+      "severity": "high",
+      "queVeElCliente": "Pagó y la pantalla de éxito (/renta/exito) se queda en instalación, falla o lista de espera; 'Mis agentes' aparece vacío o en estado unknown/failed.",
+      "replyDraft": {
+        "text": "Tu pago está registrado. No vuelvas a pagar. Estamos reparando el laboratorio; avísanos con el session_id de Stripe si tarda más de unos minutos.",
+        "antesDeEnviar": "Confirmar en Stripe que la sesión (cs_…) esté pagada.",
+        "replyLanguage": "es",
+        "needsTranslation": false,
+        "requiresHumanApproval": true,
+        "sendStatus": "NOT_SENT"
+      },
+      "cuandoEscalar": "A ops/dev ahora: sin capacidad hay que liberar un seat o esperar capacidad; nunca volver a cobrar.",
+      "diagnostico": [
+        "Consultar la capacidad de los launchers (/api/capacity): 401 = token distinto entre Lab y los launchers; available: 0 = lista de espera.",
+        "launchStatus=no_capacity en la metadata de la sesión: esperar capacidad; /api/rentals puede reintentar la reparación.",
+        "No abrir un segundo Checkout para la misma sesión: reparar o dejar en lista de espera."
+      ],
+      "regla": "Nunca pedir al comprador que pague otra vez por el mismo session_id: reparar o lista de espera.",
+      "fuente": "Lab-Avril-Life/docs/guides/lab-paid-not-ready.md (2026-10-16) regla bloqueada, síntomas y pasos 4–5"
+    }
+  ]
+}

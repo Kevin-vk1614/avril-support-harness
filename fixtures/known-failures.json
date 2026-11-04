@@ -1,0 +1,231 @@
+[
+  {
+    "id": "K1-https-degraded",
+    "name": "Seat listo pero la dirección da error SSL (§7.1/§4)",
+    "record": {
+      "scope": "avril.lab.support_ticket",
+      "ticketId": "LAB-20261102-B001",
+      "createdAt": "2026-11-02T11:00:00.000Z",
+      "email": "comprador1@example.com",
+      "category": "other",
+      "message": "Pagué hace 10 minutos, mi agente aparece listo pero al abrir mi dirección me sale error SSL, conexión no es privada.",
+      "stripeSessionId": "cs_test_K1",
+      "labSlug": "seat-k1",
+      "locale": "es",
+      "clientIp": "203.0.113.41"
+    },
+    "expected": {
+      "category": "access_failure",
+      "mustEscalate": true,
+      "severity": "medium",
+      "knownFailureIds": [
+        "seat-public-https-degraded"
+      ],
+      "handoffIncludes": [
+        "seat-public-https-degraded"
+      ],
+      "mustNotLeak": []
+    }
+  },
+  {
+    "id": "K2-caddy-site-failed",
+    "name": "Pagó y falló la configuración del sitio (§7.2)",
+    "record": {
+      "scope": "avril.lab.support_ticket",
+      "ticketId": "LAB-20261102-B002",
+      "createdAt": "2026-11-02T12:00:00.000Z",
+      "email": "comprador2@example.com",
+      "category": "not_ready",
+      "message": "Pagué el day pass y me salió: Caddy agent site could not be configured for this seat. ¿Qué hago?",
+      "stripeSessionId": "cs_test_K2",
+      "labSlug": null,
+      "locale": "es",
+      "clientIp": "203.0.113.42"
+    },
+    "expected": {
+      "category": "paid_not_ready",
+      "mustEscalate": true,
+      "severity": "high",
+      "knownFailureIds": [
+        "caddy-site-failed"
+      ],
+      "handoffIncludes": [
+        "caddy-site-failed",
+        "no pagues de nuevo"
+      ],
+      "mustNotLeak": []
+    }
+  },
+  {
+    "id": "K3-poisoned-slug",
+    "name": "Falla rápida con Permission denied y cada reintento falla (§7.3)",
+    "record": {
+      "scope": "avril.lab.support_ticket",
+      "ticketId": "LAB-20261102-B003",
+      "createdAt": "2026-11-02T13:00:00.000Z",
+      "email": "comprador3@example.com",
+      "category": "not_ready",
+      "message": "Intenté rentar y falló a los 15 segundos con Permission denied; lo volví a intentar y falla igual.",
+      "stripeSessionId": "cs_test_K3",
+      "labSlug": null,
+      "locale": "es",
+      "clientIp": "203.0.113.43"
+    },
+    "expected": {
+      "category": "paid_not_ready",
+      "mustEscalate": true,
+      "severity": "high",
+      "knownFailureIds": [
+        "poisoned-slug"
+      ],
+      "handoffIncludes": [
+        "poisoned-slug",
+        "/tmp/oc-"
+      ],
+      "mustNotLeak": []
+    }
+  },
+  {
+    "id": "K4-pids-starvation",
+    "name": "Panel carga pero el chat se cae con WebSocket 1006 (§7.4)",
+    "record": {
+      "scope": "avril.lab.support_ticket",
+      "ticketId": "LAB-20261102-B004",
+      "createdAt": "2026-11-02T14:00:00.000Z",
+      "email": "comprador4@example.com",
+      "category": "other",
+      "message": "Mi panel carga pero el chat se cae con WebSocket 1006 cada vez que escribo.",
+      "stripeSessionId": "cs_test_K4",
+      "labSlug": "seat-k4",
+      "locale": "es",
+      "clientIp": "203.0.113.44"
+    },
+    "expected": {
+      "category": "access_failure",
+      "mustEscalate": true,
+      "severity": "medium",
+      "knownFailureIds": [
+        "pids-starvation-chat-drops"
+      ],
+      "handoffIncludes": [
+        "pids"
+      ],
+      "mustNotLeak": []
+    }
+  },
+  {
+    "id": "K5-funnel-gap",
+    "name": "Pagó, cerró la pestaña y no ve agente (§2)",
+    "record": {
+      "scope": "avril.lab.support_ticket",
+      "ticketId": "LAB-20261102-B005",
+      "createdAt": "2026-11-02T15:00:00.000Z",
+      "email": "comprador5@example.com",
+      "category": "other",
+      "message": "Pagué y cerré la pestaña antes de que terminara; ahora no me aparece ningún agente.",
+      "stripeSessionId": "cs_test_K5",
+      "labSlug": null,
+      "locale": "es",
+      "clientIp": "203.0.113.45"
+    },
+    "expected": {
+      "category": "paid_no_agent",
+      "mustEscalate": true,
+      "severity": "high",
+      "knownFailureIds": [
+        "funnel-gap-closed-tab"
+      ],
+      "handoffIncludes": [
+        "incidents.jsonl"
+      ],
+      "mustNotLeak": []
+    }
+  },
+  {
+    "id": "K6-site-502",
+    "name": "lab.avril.life devuelve 502 (§8)",
+    "record": {
+      "scope": "avril.lab.support_ticket",
+      "ticketId": "LAB-20261102-B006",
+      "createdAt": "2026-11-02T16:00:00.000Z",
+      "email": "comprador6@example.com",
+      "category": "other",
+      "message": "lab.avril.life me da 502 Bad Gateway, no carga el sitio.",
+      "stripeSessionId": null,
+      "labSlug": null,
+      "locale": "es",
+      "clientIp": "203.0.113.46"
+    },
+    "expected": {
+      "category": "access_failure",
+      "mustEscalate": true,
+      "severity": "critical",
+      "knownFailureIds": [
+        "lab-site-502-deploy"
+      ],
+      "handoffIncludes": [
+        "lab-site-502-deploy"
+      ],
+      "mustNotLeak": []
+    }
+  },
+  {
+    "id": "K7-waitlist-after-pay",
+    "name": "Pagó y la pantalla de éxito muestra lista de espera (runbook)",
+    "record": {
+      "scope": "avril.lab.support_ticket",
+      "ticketId": "LAB-20261102-B007",
+      "createdAt": "2026-11-02T17:00:00.000Z",
+      "email": "comprador7@example.com",
+      "category": "other",
+      "message": "Pagué y en la pantalla de éxito me sale lista de espera, no me dan mi agente.",
+      "stripeSessionId": "cs_test_K7",
+      "labSlug": null,
+      "locale": "es",
+      "clientIp": "203.0.113.47"
+    },
+    "expected": {
+      "category": "paid_no_agent",
+      "mustEscalate": true,
+      "severity": "high",
+      "knownFailureIds": [
+        "paid-waitlist-no-capacity"
+      ],
+      "handoffIncludes": [
+        "paid-waitlist-no-capacity",
+        "No abrir un segundo Checkout",
+        "No vuelvas a pagar"
+      ],
+      "mustNotLeak": []
+    }
+  },
+  {
+    "id": "K8-launch-failed",
+    "name": "'Launch failed' unos segundos después de pagar (runbook paso 6)",
+    "record": {
+      "scope": "avril.lab.support_ticket",
+      "ticketId": "LAB-20261102-B008",
+      "createdAt": "2026-11-02T18:00:00.000Z",
+      "email": "comprador8@example.com",
+      "category": "not_ready",
+      "message": "Me salió Launch failed unos 15 segundos después de pagar.",
+      "stripeSessionId": "cs_test_K8",
+      "labSlug": null,
+      "locale": "es",
+      "clientIp": "203.0.113.48"
+    },
+    "expected": {
+      "category": "paid_not_ready",
+      "mustEscalate": true,
+      "severity": "high",
+      "knownFailureIds": [
+        "launch-failed-after-pay"
+      ],
+      "handoffIncludes": [
+        "launch-failed-after-pay",
+        "No vuelvas a pagar"
+      ],
+      "mustNotLeak": []
+    }
+  }
+]

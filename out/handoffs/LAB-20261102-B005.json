@@ -1,0 +1,78 @@
+{
+  "ticketId": "LAB-20261102-B005",
+  "mustEscalate": true,
+  "handoffSummary": "[HIGH] LAB-20261102-B005 · paid_no_agent (+access_failure). session=cs_test_K5. Síntoma: Pagué y cerré la pestaña antes de que terminara; ahora no me aparece ningún agente.  Posible falla conocida: funnel-gap-closed-tab. Siguiente: Seguir el runbook docs/guides/lab-paid-not-ready.md (repo Lab-Avril-Life): confirmar el pago, el webhook (2xx) y la metadata (deploymentId).",
+  "devHandoff": {
+    "ticketId": "LAB-20261102-B005",
+    "category": "paid_no_agent",
+    "severity": "high",
+    "symptom": "Pagué y cerré la pestaña antes de que terminara; ahora no me aparece ningún agente.",
+    "identifiers": {
+      "stripeSessionId": "cs_test_K5",
+      "labSlug": null,
+      "userSelectedCategory": "other",
+      "locale": "es",
+      "createdAt": "2026-11-02T15:00:00.000Z",
+      "contactMasked": "c***@e***.com"
+    },
+    "missingForTriage": [],
+    "hypotheses": [
+      "La metadata de la sesión no recibió deploymentId (webhook no procesado): la ruta /api/rentals?repair debería lanzar una sola vez (runbook paso 5).",
+      "El comprador cerró la pestaña: provision_fail no llegó al embudo; el fallo está solo en incidents.jsonl (lab-seat-failures.md §2).",
+      "Mapeo owner→agente frágil (persistencia en JSON de owner-agents) o wallet distinta a la del pago (Reality Audit 2026-10-02)."
+    ],
+    "nextTechnicalStep": [
+      "Seguir el runbook docs/guides/lab-paid-not-ready.md (repo Lab-Avril-Life): confirmar el pago, el webhook (2xx) y la metadata (deploymentId).",
+      "Buscar el seat y sus incidentes en Admin → Incidentes por stripeSessionId/labSlug antes de asumir que no se creó.",
+      "Comparar la wallet del pago vs. la de la sesión del comprador (el ticket no guarda wallet)."
+    ],
+    "runbook": "docs/guides/lab-paid-not-ready.md (repo Lab-Avril-Life)",
+    "doNot": [
+      "No abrir un segundo Checkout para el mismo session_id: reparar o lista de espera; nunca pedir que paguen otra vez.",
+      "No pegar contratos del wizard, modelos del CEO ni volcados crudos de Zod del launcher en chat o UI.",
+      "No rotar STRIPE_WEBHOOK_SECRET sin actualizar el env de Lab y reiniciar.",
+      "No tratar success:false del launcher durante 'provisioning' como seat faltante ni llamar launchCompany otra vez (doble launch)."
+    ],
+    "knownFailureIds": [
+      "funnel-gap-closed-tab"
+    ],
+    "notConfirmedTopics": [],
+    "reproducible": "node src/cli.js <ticket.json>  (determinista, sin red)"
+  },
+  "followUpProposal": {
+    "ticketId": "LAB-20261102-B005",
+    "source": "harness",
+    "devHandoff": "[HIGH] LAB-20261102-B005 · paid_no_agent (+access_failure)\nSíntoma: Pagué y cerré la pestaña antes de que terminara; ahora no me aparece ningún agente.\nIds: session=cs_test_K5\nPosible falla conocida: funnel-gap-closed-tab\nHipótesis:\n- La metadata de la sesión no recibió deploymentId (webhook no procesado): la ruta /api/rentals?repair debería lanzar una sola vez (runbook paso 5).\n- El comprador cerró la pestaña: provision_fail no llegó al embudo; el fallo está solo en incidents.jsonl (lab-seat-failures.md §2).\n- Mapeo owner→agente frágil (persistencia en JSON de owner-agents) o wallet distinta a la del pago (Reality Audit 2026-10-02).\nSiguiente paso:\n- Seguir el runbook docs/guides/lab-paid-not-ready.md (repo Lab-Avril-Life): confirmar el pago, el webhook (2xx) y la metadata (deploymentId).\n- Buscar el seat y sus incidentes en Admin → Incidentes por stripeSessionId/labSlug antes de asumir que no se creó.\n- Comparar la wallet del pago vs. la de la sesión del comprador (el ticket no guarda wallet).\nNo hacer:\n- No abrir un segundo Checkout para el mismo session_id: reparar o lista de espera; nunca pedir que paguen otra vez.\n- No pegar contratos del wizard, modelos del CEO ni volcados crudos de Zod del launcher en chat o UI.\n- No rotar STRIPE_WEBHOOK_SECRET sin actualizar el env de Lab y reiniciar.\n- No tratar success:false del launcher durante 'provisioning' como seat faltante ni llamar launchCompany otra vez (doble launch).\nRunbook: docs/guides/lab-paid-not-ready.md (repo Lab-Avril-Life)",
+    "customerUpdate": "Tu pago está registrado. No vuelvas a pagar. Estamos reparando el laboratorio; avísanos con el session_id de Stripe si tarda más de unos minutos.",
+    "customerUpdateSource": "runbook:lab-paid-not-ready",
+    "customerUpdateLanguage": "es",
+    "requiresHumanApproval": true,
+    "caution": "PROPUESTA: solo se conocen estos campos de data/support-ticket-follow-up.jsonl (ticketId, devHandoff, customerUpdate, source). El esquema real y los campos de estado/nota interna de ops no se verificaron. La última línea por ticketId gana: no escribir sin fusionar lo que ops ya guardó. El arnés nunca escribe ahí."
+  },
+  "knownFailureMatches": [
+    {
+      "id": "funnel-gap-closed-tab",
+      "title": "Pagué, cerré la pestaña y no me aparece nada",
+      "postMortem": "§2 (el embudo no es un registro de fallos) y evidencia faltante de §7.1",
+      "incidentCodes": [],
+      "severity": "high",
+      "queVeElCliente": "Pagó y cerró la página antes de que terminara; después no ve ningún agente ni mensaje de error.",
+      "replyDraft": {
+        "text": "Tu pago quedó registrado. Vamos a revisar qué pasó con tu agente en nuestro registro de incidentes y te escribimos con el estado. Por favor no pagues de nuevo.",
+        "antesDeEnviar": "Confirmar el pago en Stripe con el stripeSessionId del ticket.",
+        "replyLanguage": "es",
+        "needsTranslation": false,
+        "requiresHumanApproval": true,
+        "sendStatus": "NOT_SENT"
+      },
+      "cuandoEscalar": "A dev si Incidentes muestra un fallo real, o si no hay ningún registro del seat. Un fallo con la pestaña cerrada no aparece en el embudo.",
+      "diagnostico": [
+        "provision_fail se escribe de forma perezosa cuando /api/rentals sondea con la pestaña abierta; si se cierra, el embudo (pay-ready.jsonl) se queda en payment_verified.",
+        "Para fallos, confiar en incidents.jsonl (Admin → Incidentes), no en el embudo.",
+        "Cada incidente trae logTail inline (últimas 40 líneas)."
+      ],
+      "regla": "El embudo no es un registro de fallos: se consulta Incidentes.",
+      "fuente": "Lab-Avril-Life/docs/guides/lab-seat-failures.md (actualizado 2026-11-01) §2 (el embudo no es un registro de fallos) y evidencia faltante de §7.1"
+    }
+  ]
+}

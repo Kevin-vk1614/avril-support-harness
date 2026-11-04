@@ -14,26 +14,24 @@ export const CATEGORY_PRIORITY = [
   "no_match",
 ];
 
-const NOT_READY_STATUS = ["not_ready", "paid_waiting_infra", "launcher_not_configured", "provisioning", "pending", "failed", "error"];
-
 export function detectSignals(rec, msgNorm, redactionFindings) {
   const s = new Set();
 
   if (redactionFindings.length) s.add("secrets_exposed");
   if (any(msgNorm, [/\b(llave|llaves|api ?key|apikey|token|clave privada|private key|seed|semilla)\b/])) s.add("credentials_or_keys");
 
-  if (any(msgNorm, [/reembols|devoluc|\brefund|chargeback|contracargo|quiero mi dinero|me regresen? (el|mi) (dinero|pago)|cancel\w*.*(cobro|pago)|cobr\w+ (dos|2) veces|doble cobro|(cobro|cargo) duplicado/])) s.add("refund");
+  // category = lo que el comprador eligió en el formulario (not_ready | refund | other).
+  if (rec.userCategory === "refund" || any(msgNorm, [/reembols|devoluc|\brefund|chargeback|contracargo|quiero mi dinero|me regresen? (el|mi) (dinero|pago)|cancel\w*.*(cobro|pago)|cobr\w+ (dos|2) veces|doble cobro|(cobro|cargo) duplicado/])) s.add("refund");
 
   const paidText = any(msgNorm, [/\bpague\b|\bpagu[eo]\b|me cobraron|me cobro|cobro|me descontaron|\bpaid\b|\bcharged\b|pago (exitoso|aprobado|realizado|hecho)/]);
-  const paid = rec.paid || paidText;
-  const rs = String(rec.rentalStatus ?? "").toLowerCase();
-  const notReadyStatus = NOT_READY_STATUS.includes(rs);
+  // El tipo real NO trae estado de pago: "pagó" se infiere del texto o de category=not_ready (runbook paid-not-ready).
+  const paid = paidText || rec.userCategory === "not_ready";
   const notReadyText = any(msgNorm, [/no (esta|est[aá]) list[ao]|not ready|sigue (en )?(provisioning|espera|pendiente)|esperando.*(agente|seat|entorno)|paid_waiting_infra/]);
   const noAgentText = any(msgNorm, [/no (me )?(aparece|tengo|veo|llego|han dado)|sin agente|no hay (agente|seat)|mis agentes.*(vac|nada)/]);
-  const hasSeat = !!(rec.slug || rec.deploymentId);
+  const hasSeat = !!rec.labSlug;
 
-  if (paid && (notReadyStatus || notReadyText)) s.add("paid_not_ready");
-  if (paid && (noAgentText || (!hasSeat && !rec.rentalStatus && paidText && !s.has("paid_not_ready")))) s.add("paid_no_agent");
+  if (rec.userCategory === "not_ready" || (paid && notReadyText)) s.add("paid_not_ready");
+  if (paid && (noAgentText || (!hasSeat && paidText && !s.has("paid_not_ready")))) s.add("paid_no_agent");
 
   if (any(msgNorm, [/no puedo (entrar|acceder|abrir|iniciar)|control ui.*(error|no abre|no carga|no funciona|falla|roto|\b50[234]\b)|(error|no abre|no carga|no funciona|falla).*control ui|\b50[234]\b|timeout|no abre|no carga|inicio de sesion|iniciar sesion|login|enlace.*(roto|no funciona)|link.*(roto|no funciona)|error al (entrar|acceder|conectar)|no me deja (entrar|acceder)/])) s.add("access_failure");
 

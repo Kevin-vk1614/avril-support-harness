@@ -1,0 +1,44 @@
+{
+  "ticketId": "LAB-20261029-A007",
+  "mustEscalate": true,
+  "handoffSummary": "[CRITICAL] LAB-20261029-A007 · secrets_exposed (+credentials_or_keys). Síntoma: Para que lo revises, mi llave es [REDACTED:stripe_secret_key] y mi [REDACTED:password] Ya entra?  Siguiente: NO copiar el valor original a otros sistemas; purgarlo del registro del ticket si es posible. ⚠ Secretos enmascarados: stripe_secret_key,password.",
+  "devHandoff": {
+    "ticketId": "LAB-20261029-A007",
+    "category": "secrets_exposed",
+    "severity": "critical",
+    "symptom": "Para que lo revises, mi llave es [REDACTED:stripe_secret_key] y mi [REDACTED:password] Ya entra?",
+    "identifiers": {
+      "stripeSessionId": null,
+      "labSlug": null,
+      "userSelectedCategory": "other",
+      "locale": "es",
+      "createdAt": "2026-10-29T17:00:00.000Z",
+      "contactMasked": "r***@e***.com"
+    },
+    "missingForTriage": [],
+    "hypotheses": [
+      "El comprador pegó credenciales en el ticket (riesgo de exposición; ya enmascaradas en esta salida)."
+    ],
+    "nextTechnicalStep": [
+      "NO copiar el valor original a otros sistemas; purgarlo del registro del ticket si es posible.",
+      "Si es llave de Stripe/wallet/servicio: indicar al comprador que la rote/revoque desde su proveedor.",
+      "Responder manualmente (humano). Nunca pedir contraseñas ni tokens."
+    ],
+    "runbook": "docs/guides/lab-support-ops.md (repo Lab-Avril-Life)",
+    "doNot": [],
+    "knownFailureIds": [],
+    "notConfirmedTopics": [],
+    "reproducible": "node src/cli.js <ticket.json>  (determinista, sin red)"
+  },
+  "followUpProposal": {
+    "ticketId": "LAB-20261029-A007",
+    "source": "harness",
+    "devHandoff": "[CRITICAL] LAB-20261029-A007 · secrets_exposed (+credentials_or_keys)\nSíntoma: Para que lo revises, mi llave es [REDACTED:stripe_secret_key] y mi [REDACTED:password] Ya entra?\nHipótesis:\n- El comprador pegó credenciales en el ticket (riesgo de exposición; ya enmascaradas en esta salida).\nSiguiente paso:\n- NO copiar el valor original a otros sistemas; purgarlo del registro del ticket si es posible.\n- Si es llave de Stripe/wallet/servicio: indicar al comprador que la rote/revoque desde su proveedor.\n- Responder manualmente (humano). Nunca pedir contraseñas ni tokens.\nRunbook: docs/guides/lab-support-ops.md (repo Lab-Avril-Life)",
+    "customerUpdate": null,
+    "customerUpdateSource": null,
+    "customerUpdateLanguage": "es",
+    "requiresHumanApproval": true,
+    "caution": "PROPUESTA: solo se conocen estos campos de data/support-ticket-follow-up.jsonl (ticketId, devHandoff, customerUpdate, source). El esquema real y los campos de estado/nota interna de ops no se verificaron. La última línea por ticketId gana: no escribir sin fusionar lo que ops ya guardó. El arnés nunca escribe ahí."
+  },
+  "knownFailureMatches": []
+}

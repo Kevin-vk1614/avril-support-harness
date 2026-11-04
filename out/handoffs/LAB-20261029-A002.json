@@ -1,0 +1,48 @@
+{
+  "ticketId": "LAB-20261029-A002",
+  "mustEscalate": true,
+  "handoffSummary": "[LOW] LAB-20261029-A002 · topic_not_confirmed. Síntoma: ¿Puedo pagar con cripto (x402) y tienen una API sandbox para desarrolladores?  Siguiente: Humano responde sin prometer. Si se repite, evaluar agregar una entrada FAQ confirmada.",
+  "devHandoff": {
+    "ticketId": "LAB-20261029-A002",
+    "category": "topic_not_confirmed",
+    "severity": "low",
+    "symptom": "¿Puedo pagar con cripto (x402) y tienen una API sandbox para desarrolladores?",
+    "identifiers": {
+      "stripeSessionId": null,
+      "labSlug": null,
+      "userSelectedCategory": "other",
+      "locale": "es",
+      "createdAt": "2026-10-29T12:00:00.000Z",
+      "contactMasked": "d***@e***.com"
+    },
+    "missingForTriage": [],
+    "hypotheses": [
+      "El tema está marcado UNKNOWN/MOCK/no enviado en las fuentes; responder solo traería riesgo de promesa falsa."
+    ],
+    "nextTechnicalStep": [
+      "Humano responde sin prometer. Si se repite, evaluar agregar una entrada FAQ confirmada."
+    ],
+    "runbook": "docs/guides/lab-support-ops.md (repo Lab-Avril-Life)",
+    "doNot": [],
+    "knownFailureIds": [],
+    "notConfirmedTopics": [
+      {
+        "id": "nc-sandbox-api-mcp-skills",
+        "note": "Sandbox de desarrollador / bundles MCP-skills / pagos cripto-x402 NO están enviados en la oferta de Lab (MOCK / NOT SHIPPED / THESIS).",
+        "source": "02-current-product-agent-launcher.md ('MOCK / NOT SHIPPED'), CURRENT-STATE.md ('Claims we should not make yet')"
+      }
+    ],
+    "reproducible": "node src/cli.js <ticket.json>  (determinista, sin red)"
+  },
+  "followUpProposal": {
+    "ticketId": "LAB-20261029-A002",
+    "source": "harness",
+    "devHandoff": "[LOW] LAB-20261029-A002 · topic_not_confirmed\nSíntoma: ¿Puedo pagar con cripto (x402) y tienen una API sandbox para desarrolladores?\nHipótesis:\n- El tema está marcado UNKNOWN/MOCK/no enviado en las fuentes; responder solo traería riesgo de promesa falsa.\nSiguiente paso:\n- Humano responde sin prometer. Si se repite, evaluar agregar una entrada FAQ confirmada.\nRunbook: docs/guides/lab-support-ops.md (repo Lab-Avril-Life)",
+    "customerUpdate": null,
+    "customerUpdateSource": null,
+    "customerUpdateLanguage": "es",
+    "requiresHumanApproval": true,
+    "caution": "PROPUESTA: solo se conocen estos campos de data/support-ticket-follow-up.jsonl (ticketId, devHandoff, customerUpdate, source). El esquema real y los campos de estado/nota interna de ops no se verificaron. La última línea por ticketId gana: no escribir sin fusionar lo que ops ya guardó. El arnés nunca escribe ahí."
+  },
+  "knownFailureMatches": []
+}

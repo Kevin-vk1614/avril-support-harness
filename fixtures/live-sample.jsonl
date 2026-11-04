@@ -1,3 +1,0 @@
-{"id": "LAB-20261029-0001", "createdAt": "2026-10-29T15:04:00.000Z", "status": "open", "source": "lab-form", "email": "comprador@example.com", "subject": "Pagu\u00e9 y mi agente no est\u00e1 listo", "message": "Pagu\u00e9 el trial hace 40 minutos y sigue en espera, no est\u00e1 listo mi agente.", "stripeSessionId": "cs_test_a1B2c3D4", "stripePaymentIntentId": "pi_test_3Nxxxxxxxxxxxx", "paymentStatus": "paid", "slug": "demo-seat-01", "rentalStatus": "paid_waiting_infra"}
-{"id":"LAB-SAMPLE-0002","message":"¿Cuánto cuesta el Day Pass?","email":"x@example.com"}
-esto no es json

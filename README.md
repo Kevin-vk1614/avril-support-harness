@@ -11,27 +11,67 @@ NO debe resolver solo, entrega un resumen útil para humano/dev.
 ## Instalación y ejecución
 
 ```bash
-git clone <URL-de-este-repo> && cd avril-support-harness
+git clone https://github.com/Kevin-vk1614/avril-support-harness.git && cd avril-support-harness
 node -v                      # >= 18
 npm run scenarios            # 8 escenarios → out/ (evidencia)
-npm test                     # 17 pruebas unitarias (node:test)
+npm test                     # 46 pruebas unitarias (node:test)
 node src/cli.js fixtures/example-ticket.json     # un ticket → JSON a stdout
 cat ticket.json | node src/cli.js -              # o por stdin (también acepta un arreglo)
 ```
 
 ## Entradas / salidas
 
-**Entrada** — `SupportTicketRecord` (ver `fixtures/example-ticket.json`). Campos usados: `id` (`LAB-*`), `createdAt`,
-`email`, `subject`, `message`, `wallet`, `stripeSessionId`, `stripePaymentIntentId`, `paymentStatus`, `slug`,
-`rentalStatus`, `deploymentId`. Aliases tolerados en `src/record.js`.
-> ⚠️ **Supuesto a verificar:** no tuve acceso a `lib/support-tickets.ts` (repo Lab-Avril-Life). Los nombres de campos
-> son los esperables; si difieren, basta ajustar `ALIASES` en `src/record.js`.
+**Entrada** — `SupportTicketRecord`, **verificado contra el tipo real** de `Avril-Systems/Lab-Avril-Life/lib/support-tickets.ts`
+(archivo compartido por Kevin; el repo Lab es de solo lectura y no se modificó). Ver `fixtures/example-ticket.json`.
+
+```ts
+type SupportTicketRecord = {
+  scope: 'avril.lab.support_ticket'; ticketId: string /* LAB-YYYYMMDD-XXXX */; createdAt: string; email: string
+  category: 'not_ready' | 'refund' | 'other'; message: string
+  stripeSessionId: string | null; labSlug: string | null; locale: 'en' | 'es'; clientIp: string
+}
+```
+
+### Tabla: campo supuesto → campo real → diferencia
+
+| Campo supuesto (versión 1 del arnés) | Campo real | Diferencia / qué cambió |
+|---|---|---|
+| `id` | `ticketId` | Distinto nombre. Formato real `LAB-YYYYMMDD-XXXX` (4 hex mayúsculas). `id` sigue aceptándose como alias con aviso |
+| `createdAt` | `createdAt` | Igual |
+| `email` | `email` | Igual. Nunca sale completo (se enmascara) |
+| `subject` | — | **No existe.** Solo hay `message` |
+| `message` | `message` | Igual. Ahora también se enmascaran emails/teléfonos escritos dentro del texto |
+| `status`, `source` | — | **No existen** en el tipo (la cola `/admin` puede tener más estado; no está en el registro) |
+| `category` (no estaba) | `category` `not_ready \| refund \| other` | **Nuevo y valioso:** la elige el comprador. `not_ready` y `refund` escalan siempre (`user_selected_*`) |
+| `slug` | `labSlug` | Distinto nombre; puede ser `null` (seat no creado: pista para el dev) |
+| `stripeSessionId` | `stripeSessionId` | Igual, pero `string \| null` |
+| `stripePaymentIntentId`, `paymentStatus` | — | **No existen.** El PaymentIntent se obtiene desde la sesión en Stripe; "pagó" se infiere del texto o de `category=not_ready` |
+| `rentalStatus`, `deploymentId`, `controlUiUrl` | — | **No existen.** El estado del seat se consulta aparte (`/api/rentals?session_id=…`) |
+| `wallet` | — | **No existe** en el ticket |
+| (no estaba) | `scope` | Constante `avril.lab.support_ticket`; se valida |
+| (no estaba) | `locale` `en \| es` | Si es `en`, el borrador FAQ (en español) marca `needsTranslation: true` |
+| (no estaba) | `clientIp` | **Dato personal: nunca sale en ningún artefacto** (hay verificación en cada escenario) |
+
+El arnés avisa (`warnings`) si el ticket trae campos fuera del contrato, `category` inválida, `ticketId` mal formado o `scope` distinto.
+
+### Fixture de ticket
+
+- `fixtures/support-tickets.dev.jsonl` — **los 2 fixtures de desarrollo del propio repo Lab** (`LAB-20261029-DEV1/DEV2`, datos de ejemplo, no son tickets de compradores). Es la muestra con el formato exacto de `data/support-tickets.jsonl`.
+- `fixtures/support-tickets.sample.jsonl` — sintético, con la forma del tipo real.
+- Para usar un ticket **real anonimizado**: el archivo `data/support-tickets.jsonl` no está en el repo Lab (lo escribe el servidor al crear
+  tickets, en `SUPPORT_TICKETS_PATH` o `data/` del proceso). Quien tenga acceso al servidor toma 1–2 líneas y corre:
+  ```bash
+  node scripts/anonymize-jsonl.js real.jsonl fixtures/support-tickets.real-anon.jsonl
+  ```
+  Reemplaza email, `clientIp`, `stripeSessionId` y `labSlug` por etiquetas consistentes y limpia secretos/emails/teléfonos del texto.
+  **Revisa a mano `message` antes de subir a Git** y no subas nunca el archivo original.
 
 **Salida** (`schema: avril.support-triage/v1`):
 
 | Campo | Qué es |
 |---|---|
-| `devHandoff` | síntoma (redactado), ids Stripe/slug/deployment, hipótesis, siguiente paso técnico, runbook |
+| `followUpProposal` | propuesta de fila de seguimiento para Lab: `devHandoff` (texto), `customerUpdate` (borrador), `source: harness`. Nunca se escribe en Lab |
+| `devHandoff` | síntoma (redactado), `stripeSessionId`/`labSlug`, qué falta para actuar (`missingForTriage`), hipótesis, siguiente paso técnico, runbook |
 | `mustEscalate` + `escalationReasons` | `true` siempre que no sea FAQ confirmada |
 | `handoffSummary` | texto corto para el campo **Handoff a dev** de `/admin` |
 | `publicReplyDraft` | opcional; solo FAQ confirmada; `requiresHumanApproval: true`, `sendStatus: "NOT_SENT"` |
@@ -52,6 +92,8 @@ cat ticket.json | node src/cli.js -              # o por stdin (también acepta 
 
 Resultado completo en [`out/scenario-report.md`](out/scenario-report.md). Resumen: **8/8 PASS**, 7 escalan, 1 se resuelve con FAQ.
 
+Además, **8 casos de fallas reales** (`fixtures/known-failures.json`): 6 de los post-mortems de `lab-seat-failures.md` y 2 del runbook `lab-paid-not-ready.md`. Total: 16/16 casos PASS.
+
 | # | Escenario | Resultado esperado |
 |---|---|---|
 | S01 | FAQ: precio/duración del trial | borrador FAQ, sin escalar |
@@ -64,7 +106,54 @@ Resultado completo en [`out/scenario-report.md`](out/scenario-report.md). Resume
 | S08 | datos personales / borrado | escalar; email enmascarado |
 
 > **Honestidad sobre la validación:** los escenarios los escribí junto con las reglas, así que 8/8 no prueba generalización.
-> Por eso hay 17 pruebas (`test/harness.test.js`) que sí encontraron una falla (ver abajo).
+> Por eso hay 46 pruebas (`test/harness.test.js`) que sí encontraron una falla (ver abajo).
+
+## Integración con Lab (según `lab-support-ops.md`)
+
+Flujo real: el comprador envía el formulario **Soporte** → ticket en `data/support-tickets.jsonl` → el fundador trabaja la cola en `/admin → Soporte / reportes`.
+El arnés **no reemplaza la cola**: produce lo que iría en la misma fila de seguimiento (`data/support-ticket-follow-up.jsonl`, "la última línea por `ticketId` gana"):
+
+| Campo de Lab | Qué genera el arnés | Notas |
+|---|---|---|
+| `devHandoff` | `followUpProposal.devHandoff` (texto: síntoma, ids, hipótesis, siguiente paso, **No hacer**, runbook) | para el campo "Handoff a dev" de `/admin` |
+| `customerUpdate` | `followUpProposal.customerUpdate` | borrador para correo **aprobado por un humano**. En `paid_not_ready`/`paid_no_agent` es el **mensaje oficial del runbook**, en el idioma del comprador (`locale`); en FAQ resueltas es el borrador FAQ; con secretos, reembolso o datos personales es `null` |
+| `source` | `"harness"` | |
+
+- ⚠️ **Fusionar antes de escribir:** como la última línea gana, una fila escrita solo con estos campos borraría el estado y la nota interna que ops ya guardó. Por eso el arnés **nunca escribe** en ese archivo; la integración con `PATCH /api/admin/support/tickets/:id` (con autenticación del arnés) queda como trabajo futuro.
+- Cuando el envío de correo esté encendido, el comprador ya recibe un acuse automático al crear el ticket; el `customerUpdate` es la actualización humana posterior.
+- Regla bloqueada del runbook, aplicada en todo el arnés: **nunca pedir pagar otra vez** el mismo `session_id` (hay una prueba que lo vigila).
+
+## FAQ de fallas reales (post-mortems)
+
+8 casos con **qué ve el cliente, qué se responde y cuándo escalar**, derivados de `Lab-Avril-Life/docs/guides/lab-seat-failures.md` (actualizado 2026-11-01) y del runbook `lab-paid-not-ready.md` (2026-10-16).
+Documento legible: [`docs/FAQ-FALLAS-REALES.md`](docs/FAQ-FALLAS-REALES.md) · datos: `data/failure-cases.json`.
+
+| Caso | Post-mortem | Cuándo escalar a dev |
+|---|---|---|
+| Dirección del seat da error SSL/TLS | §7.1, §4, §5 | si pasan ~5 min (un ciclo de reconcile) y sigue sin abrir |
+| Falla al configurar el sitio (Caddy) | §7.2 + regla 2 | de inmediato: bloquea a TODOS los seats |
+| Compra falla rápido con *Permission denied* (slug envenenado) | §7.3 | siempre: hay que limpiar el slug |
+| Panel carga pero el chat se cae (WebSocket 1006) | §7.4 | si ocurre después del arreglo del 2026-11-01 (regresión) |
+| Pagó, cerró la pestaña y no ve agente | §2 | si Incidentes muestra fallo o no hay registro |
+| `lab.avril.life` devuelve 502 | §8 | de inmediato (afecta a todos) |
+| Pagó y ve lista de espera / sin capacidad | runbook, pasos 4–5 | ahora: liberar capacidad; **nunca volver a cobrar** |
+| 'Launch failed' ~15 s después de pagar | runbook, paso 6 | a dev: log del launcher; no relanzar a ciegas |
+
+Estos casos **siempre escalan**; el campo `knownFailureMatches[].replyDraft` es un borrador de acuse **sin enviar** (`NOT_SENT`, requiere aprobación humana).
+`publicReplyDraft` sigue siendo solo para la FAQ confirmada. El archivo fuente trae hostnames, IPs y rutas de llaves: **no se copiaron** (el repo es público; hay una prueba que lo verifica).
+
+## Modo tickets reales exportados (con humano en el medio)
+
+Para demostrar el flujo con tickets de verdad **sin que el arnés toque producción**: una persona con permiso crea 1–2 tickets
+en el formulario de apoyo de lab.avril.life, los exporta (JSONL de Lab o `/admin`) y el arnés los procesa:
+
+```bash
+node scripts/triage-jsonl.js ruta/al/export.jsonl        # salida en out/live/ (ignorada por git)
+```
+
+Hace triage de cada línea, escribe `out/live/handoffs/<LAB-*>.json` y `out/live/tickets-log.jsonl`, y reporta líneas inválidas sin detenerse.
+El arnés **nunca** envía el formulario, ni responde al comprador, ni escribe en Lab: crear el ticket y pegar el handoff en `/admin` son pasos humanos.
+Prueba con `fixtures/support-tickets.sample.jsonl`. Nota: un export real trae emails reales; los artefactos salen enmascarados, pero no subas el export a Git.
 
 ## Pruebas, fallas encontradas y cambios
 
@@ -76,6 +165,14 @@ Resultado completo en [`out/scenario-report.md`](out/scenario-report.md). Resume
 | 4 | **"¿Qué es el Control UI…?" se clasificaba como `access_failure`** | prueba adversarial #6 (falló) | la regla exige contexto de error junto a "control ui" |
 | 5 | "me cobraron dos veces" / "cancelen mi cobro" caían en `paid_no_agent` | sondeo manual | añadido a señal `refund` (disputa de pago); prueba nueva |
 | 6 | `SKILL.md` llamaba `node src/cli.js`, pero OpenClaw copia solo el skill al workspace → el comando no existiría | instalé el skill en OpenClaw real | el skill usa `$AVRIL_SUPPORT_HARNESS` y declara `requires.env`; verificado (sin la variable: *Needs setup*; con ella: *Ready*) |
+| 9 | **El arnés asumía 9 campos que no existen** (`id`, `subject`, `status`, `source`, `wallet`, `stripePaymentIntentId`, `paymentStatus`, `rentalStatus`, `deploymentId`) y no usaba `category`, `locale`, `clientIp`, `scope` | tipo real `lib/support-tickets.ts` | Contrato reescrito, tabla supuesto → real, fixtures rehechos, `clientIp` nunca sale, `category` usada como señal |
+| 10 | Un email escrito dentro del `message` viajaba completo al handoff | revisión al cambiar el contrato | `maskPiiInText` + prueba |
+| 14 | El mensaje oficial del runbook y su **'No hacer'** (no segundo Checkout, no relanzar `launchCompany`) no estaban en el arnés; las pistas de `/api/rentals?session_id=` eran suposiciones del Reality Audit | `lab-paid-not-ready.md` | Playbook rehecho con los pasos 1–7 del runbook; `doNot` y mensaje oficial (ES/EN) en la salida |
+| 15 | "¿Hay lista de espera?" antes de comprar se habría tratado como falla de capacidad | diseño del caso nuevo | El caso exige contexto de pago (`requirePaid`); control negativo en pruebas |
+| 12 | `ticketId` exigía 4 hex (`[0-9A-F]`), pero los fixtures dev reales usan `DEV1`/`DEV2` | `support-tickets_dev.jsonl` del repo Lab | Regex a 4 alfanuméricos mayúsculas (el generador sí produce hex); prueba con el fixture real |
+| 13 | Los casos de fallas reales solo detectaban español; un ticket con `locale: "en"` pasaba sin detectar | prueba adversarial | Palabras clave en inglés + prueba |
+| 11 | **Llaves en mayúsculas (`SK_LIVE_…`) no se enmascaraban y salían completas en el handoff** (además `WHSEC_`, `RK_`, `BEARER`, `API_KEY_` en cualquier combinación) | PR #1 de valrami-hue (reproducido y ampliado) | Todos los patrones de `src/redact.js` son insensibles a mayúsculas; prueba nueva |
+| 8 | La FAQ decía "modelo BYOK" (según QA 2026-10-20), pero la página actual dice créditos iniciales + BYOK opcional | leí la metadescripción de lab.avril.life | FAQ corregida con aviso de discrepancia; confirmar con el equipo |
 | 7 | "¿Qué es BYOK?" escalaba como `credentials_or_keys`, pero BYOK es concepto confirmado en la landing | informe QA (Caso 2) | `byok` sale de la señal de llaves y tiene su FAQ; "dónde pongo mi API key" sigue escalando |
 
 ## Limitaciones conocidas
@@ -84,7 +181,11 @@ Resultado completo en [`out/scenario-report.md`](out/scenario-report.md). Resume
 - **Sobre-escalamiento:** "Pagué ayer, ¿cómo funciona…?" escala como `paid_no_agent`; "Mi clave es muy larga…" se redacta como contraseña. Aceptado por seguridad; no corregido.
 - Español e inglés básicos; sin otros idiomas.
 - Hipótesis y runbooks salen de documentos del repo MCP (auditoría 2026-10-02): **pueden estar desfasados** respecto a producción.
-- El formato real de `SupportTicketRecord`, `/admin` y `lab-paid-not-ready.md` **no se verificaron** (sin acceso al repo Lab-Avril-Life).
+- **Verificado contra documentos reales de Lab:** `lib/support-tickets.ts`, `lab-seat-failures.md`, `lab-paid-not-ready.md` y `lab-support-ops.md`. **No verificado:** la interfaz `/admin` en vivo, el esquema real de `data/support-ticket-follow-up.jsonl` (solo se conocen 4 campos) y el comportamiento del envío de correo (Resend, hoy apagado por defecto). Las hipótesis mezclan los documentos de Lab (más recientes) con el Reality Audit (2026-10-02).
+- Los casos de fallas reconocen español e inglés con palabras clave: un mensaje con otras palabras caerá en `no_match`/`access_failure` y escala igual (falla hacia el lado seguro).
+- Un mensaje que solo mencione "certificado", "caddy" o "websocket" (aunque sea una pregunta general) escala como falla conocida: sobre-escalamiento aceptado.
+- El ticket real no trae estado de pago ni PaymentIntent: "pagó" se **infiere** del texto o de `category=not_ready`.
+- Emails/teléfonos dentro del texto se enmascaran con reglas simples; nombres propios y direcciones no.
 - Los precios de la FAQ son "default" del plan; un humano debe confirmarlos antes de enviar.
 - **OpenClaw:** instalé `openclaw` 2026.6.35 y el skill se reconoce (*Ready*, visible al modelo, disponible como comando) y su comando corre correctamente desde otro directorio. **No** corrí una conversación completa con un agente (requiere llave de modelo, que no se debe usar aquí). Hermes no se probó.
 
@@ -96,8 +197,8 @@ Resultado completo en [`out/scenario-report.md`](out/scenario-report.md). Resume
 ## Estructura
 
 ```
-src/        harness.js (triage) · classify.js · faq.js · redact.js · record.js · cli.js
-data/       faq.json (FAQ confirmada + temas no confirmados, con fuentes)
+src/        harness.js (triage) · classify.js · faq.js · failures.js · redact.js · record.js · anonymize.js · cli.js
+data/       faq.json (FAQ confirmada + temas no confirmados) · failure-cases.json (6 fallas reales)
 fixtures/   example-ticket.json · scenarios.json (8 escenarios con expected)
 scripts/    run-scenarios.js → out/
 out/        scenario-report.md · results.json · tickets-log.jsonl · handoffs/<LAB-*>.json   (evidencia)

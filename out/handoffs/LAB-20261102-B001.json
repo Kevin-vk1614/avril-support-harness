@@ -1,0 +1,75 @@
+{
+  "ticketId": "LAB-20261102-B001",
+  "mustEscalate": true,
+  "handoffSummary": "[MEDIUM] LAB-20261102-B001 · access_failure. session=cs_test_K1 slug=seat-k1. Síntoma: Pagué hace 10 minutos, mi agente aparece listo pero al abrir mi dirección me sale error SSL, conexión no es privada.  Posible falla conocida: seat-public-https-degraded. Siguiente: Verificar estado del seat y URL del Control UI (patrón *.avril.life).",
+  "devHandoff": {
+    "ticketId": "LAB-20261102-B001",
+    "category": "access_failure",
+    "severity": "medium",
+    "symptom": "Pagué hace 10 minutos, mi agente aparece listo pero al abrir mi dirección me sale error SSL, conexión no es privada.",
+    "identifiers": {
+      "stripeSessionId": "cs_test_K1",
+      "labSlug": "seat-k1",
+      "userSelectedCategory": "other",
+      "locale": "es",
+      "createdAt": "2026-11-02T11:00:00.000Z",
+      "contactMasked": "c***@e***.com"
+    },
+    "missingForTriage": [],
+    "hypotheses": [
+      "Error TLS ('tlsv1 alert internal error') = Caddy sin bloque para el hostname; el seat está sano y el reconcile lo repara en ≤5 min (§5).",
+      "Contenedor unhealthy con healthz externo funcionando = agotamiento de pids, no falla del gateway (§7.4).",
+      "Control UI no disponible (health check, Caddy, subdominio *.avril.life) o seat no ready; falla de sign-in con wallet."
+    ],
+    "nextTechnicalStep": [
+      "Verificar estado del seat y URL del Control UI (patrón *.avril.life).",
+      "Probar sign-in con wallet en entorno de prueba; no pedir credenciales al comprador."
+    ],
+    "runbook": "docs/guides/lab-support-ops.md (repo Lab-Avril-Life)",
+    "doNot": [],
+    "knownFailureIds": [
+      "seat-public-https-degraded"
+    ],
+    "notConfirmedTopics": [],
+    "reproducible": "node src/cli.js <ticket.json>  (determinista, sin red)"
+  },
+  "followUpProposal": {
+    "ticketId": "LAB-20261102-B001",
+    "source": "harness",
+    "devHandoff": "[MEDIUM] LAB-20261102-B001 · access_failure\nSíntoma: Pagué hace 10 minutos, mi agente aparece listo pero al abrir mi dirección me sale error SSL, conexión no es privada.\nIds: session=cs_test_K1 slug=seat-k1\nPosible falla conocida: seat-public-https-degraded\nHipótesis:\n- Error TLS ('tlsv1 alert internal error') = Caddy sin bloque para el hostname; el seat está sano y el reconcile lo repara en ≤5 min (§5).\n- Contenedor unhealthy con healthz externo funcionando = agotamiento de pids, no falla del gateway (§7.4).\n- Control UI no disponible (health check, Caddy, subdominio *.avril.life) o seat no ready; falla de sign-in con wallet.\nSiguiente paso:\n- Verificar estado del seat y URL del Control UI (patrón *.avril.life).\n- Probar sign-in con wallet en entorno de prueba; no pedir credenciales al comprador.\nRunbook: docs/guides/lab-support-ops.md (repo Lab-Avril-Life)",
+    "customerUpdate": "Tu pago quedó registrado y, por lo que vemos, tu agente está funcionando; lo que tarda es activar la dirección pública segura. Se reintenta automáticamente cada pocos minutos. No necesitas pagar de nuevo. Te avisamos en cuanto abra, o si vemos que hace falta intervenir.",
+    "customerUpdateSource": "failure:seat-public-https-degraded",
+    "customerUpdateLanguage": "es",
+    "requiresHumanApproval": true,
+    "caution": "PROPUESTA: solo se conocen estos campos de data/support-ticket-follow-up.jsonl (ticketId, devHandoff, customerUpdate, source). El esquema real y los campos de estado/nota interna de ops no se verificaron. La última línea por ticketId gana: no escribir sin fusionar lo que ops ya guardó. El arnés nunca escribe ahí."
+  },
+  "knownFailureMatches": [
+    {
+      "id": "seat-public-https-degraded",
+      "title": "Mi agente está listo, pero mi dirección no abre (error SSL/TLS)",
+      "postMortem": "§7.1, §4 y §5 (capa TLS)",
+      "incidentCodes": [
+        "PUBLIC_PROBE_DEGRADED",
+        "CADDY_TLS_SYNC_FAILED"
+      ],
+      "severity": "medium",
+      "queVeElCliente": "Pagó y el seat figura listo (en versiones anteriores al 2026-11-01 llegaba a desaparecer a los pocos minutos), pero al abrir su dirección <slug>.avril.life el navegador muestra un error SSL/TLS.",
+      "replyDraft": {
+        "text": "Tu pago quedó registrado y, por lo que vemos, tu agente está funcionando; lo que tarda es activar la dirección pública segura. Se reintenta automáticamente cada pocos minutos. No necesitas pagar de nuevo. Te avisamos en cuanto abra, o si vemos que hace falta intervenir.",
+        "antesDeEnviar": "Verificar en Admin → Incidentes que el seat esté 'ready' con PUBLIC_PROBE_DEGRADED o CADDY_TLS_SYNC_FAILED.",
+        "replyLanguage": "es",
+        "needsTranslation": false,
+        "requiresHumanApproval": true,
+        "sendStatus": "NOT_SENT"
+      },
+      "cuandoEscalar": "A dev si pasó más de ~5 min (un ciclo de reconcile) y sigue sin abrir, si el incidente NO es PUBLIC_PROBE_DEGRADED/CADDY_TLS_SYNC_FAILED, o si hay un seat 'failed' donde antes estaba 'ready'.",
+      "diagnostico": [
+        "'tlsv1 alert internal error' = Caddy sin bloque para ese hostname; el seat está bien.",
+        "Esperar el reconcile (≤5 min) o re-ejecutarlo; no re-provisionar ni pedir pago otra vez.",
+        "No subir el timeout de la sonda pública: observa, no bloquea."
+      ],
+      "regla": "La sonda pública observa, nunca bloquea: no se destruye un seat sano por un problema del borde HTTPS.",
+      "fuente": "Lab-Avril-Life/docs/guides/lab-seat-failures.md (actualizado 2026-11-01) §7.1, §4 y §5 (capa TLS)"
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "ticketId": "LAB-20261029-A003",
+  "mustEscalate": true,
+  "handoffSummary": "[HIGH] LAB-20261029-A003 · paid_not_ready. session=cs_test_S03aBcD slug=seat-s03 elegida=not_ready. Síntoma: Pagué el trial hace 45 minutos y mi agente no está listo, sigue en espera.  Siguiente: Seguir el runbook docs/guides/lab-paid-not-ready.md (repo Lab-Avril-Life) en orden: dinero → webhook → env → launchers → metadata → logs → contenedor.",
+  "devHandoff": {
+    "ticketId": "LAB-20261029-A003",
+    "category": "paid_not_ready",
+    "severity": "high",
+    "symptom": "Pagué el trial hace 45 minutos y mi agente no está listo, sigue en espera.",
+    "identifiers": {
+      "stripeSessionId": "cs_test_S03aBcD",
+      "labSlug": "seat-s03",
+      "userSelectedCategory": "not_ready",
+      "locale": "es",
+      "createdAt": "2026-10-29T13:00:00.000Z",
+      "contactMasked": "l***@e***.com"
+    },
+    "missingForTriage": [],
+    "hypotheses": [
+      "Webhook de Stripe no entregado o con error: https://lab.avril.life/api/webhooks/stripe debe dar 2xx; un 301 o un host equivocado rompe la firma; si Lab estuvo caído hay que repetir el evento (runbook pasos 2–3).",
+      "STRIPE_WEBHOOK_SECRET que no coincide con las llaves (live/test) o LAUNCHER_TOKEN distinto entre Lab y los launchers → 401 (pasos 3–4).",
+      "Sin capacidad (NO_CAPACITY / available: 0): el comprador queda en lista de espera (pasos 4–5).",
+      "Falla ~15 s después del pago con el contenedor ya arriba: script de dedupe del Caddyfile ausente, 'Caddy/TLS setup failed' o 'no SSH key worked' (paso 6).",
+      "Incidente en incidents.jsonl (PROVISION_THREW, REMOTE_DEPLOY_FAILED, HEALTHCHECK_TIMEOUT, CADDY_SITE_FAILED, UPSTREAM_PROBE_FAILED); seat 'ready' degradado (PUBLIC_PROBE_DEGRADED / CADDY_TLS_SYNC_FAILED: el reconcile reintenta cada 5 min); o slug envenenado si falla <~20 s con ruta /tmp/oc-* (lab-seat-failures.md §3, §7)."
+    ],
+    "nextTechnicalStep": [
+      "Seguir el runbook docs/guides/lab-paid-not-ready.md (repo Lab-Avril-Life) en orden: dinero → webhook → env → launchers → metadata → logs → contenedor.",
+      "Confirmar el pago en Stripe (session cs_…) y que la entrega del webhook dio 2xx; repetir el evento si Lab estuvo caído.",
+      "Metadata de la sesión en Stripe: ¿tiene deploymentId? Si falta y está pagada, /api/rentals?repair relanza UNA vez; con launchStatus=no_capacity esperar capacidad; con launchError leer logs antes de limpiarlo.",
+      "Para fallos leer Admin → Incidentes (incidents.jsonl), NO pay-ready.jsonl: el embudo se queda en payment_verified si el comprador cerró la pestaña.",
+      "Si el seat está ready degradado, esperar el reconcile (≤5 min); no re-provisionar. Contenedor muerto con id en metadata: destruir y relanzar UNA vez (mismo pago)."
+    ],
+    "runbook": "docs/guides/lab-paid-not-ready.md (repo Lab-Avril-Life)",
+    "doNot": [
+      "No abrir un segundo Checkout para el mismo session_id: reparar o lista de espera; nunca pedir que paguen otra vez.",
+      "No pegar contratos del wizard, modelos del CEO ni volcados crudos de Zod del launcher en chat o UI.",
+      "No rotar STRIPE_WEBHOOK_SECRET sin actualizar el env de Lab y reiniciar.",
+      "No tratar success:false del launcher durante 'provisioning' como seat faltante ni llamar launchCompany otra vez (doble launch)."
+    ],
+    "knownFailureIds": [],
+    "notConfirmedTopics": [],
+    "reproducible": "node src/cli.js <ticket.json>  (determinista, sin red)"
+  },
+  "followUpProposal": {
+    "ticketId": "LAB-20261029-A003",
+    "source": "harness",
+    "devHandoff": "[HIGH] LAB-20261029-A003 · paid_not_ready\nSíntoma: Pagué el trial hace 45 minutos y mi agente no está listo, sigue en espera.\nIds: session=cs_test_S03aBcD slug=seat-s03 elegida=not_ready\nHipótesis:\n- Webhook de Stripe no entregado o con error: https://lab.avril.life/api/webhooks/stripe debe dar 2xx; un 301 o un host equivocado rompe la firma; si Lab estuvo caído hay que repetir el evento (runbook pasos 2–3).\n- STRIPE_WEBHOOK_SECRET que no coincide con las llaves (live/test) o LAUNCHER_TOKEN distinto entre Lab y los launchers → 401 (pasos 3–4).\n- Sin capacidad (NO_CAPACITY / available: 0): el comprador queda en lista de espera (pasos 4–5).\n- Falla ~15 s después del pago con el contenedor ya arriba: script de dedupe del Caddyfile ausente, 'Caddy/TLS setup failed' o 'no SSH key worked' (paso 6).\n- Incidente en incidents.jsonl (PROVISION_THREW, REMOTE_DEPLOY_FAILED, HEALTHCHECK_TIMEOUT, CADDY_SITE_FAILED, UPSTREAM_PROBE_FAILED); seat 'ready' degradado (PUBLIC_PROBE_DEGRADED / CADDY_TLS_SYNC_FAILED: el reconcile reintenta cada 5 min); o slug envenenado si falla <~20 s con ruta /tmp/oc-* (lab-seat-failures.md §3, §7).\nSiguiente paso:\n- Seguir el runbook docs/guides/lab-paid-not-ready.md (repo Lab-Avril-Life) en orden: dinero → webhook → env → launchers → metadata → logs → contenedor.\n- Confirmar el pago en Stripe (session cs_…) y que la entrega del webhook dio 2xx; repetir el evento si Lab estuvo caído.\n- Metadata de la sesión en Stripe: ¿tiene deploymentId? Si falta y está pagada, /api/rentals?repair relanza UNA vez; con launchStatus=no_capacity esperar capacidad; con launchError leer logs antes de limpiarlo.\n- Para fallos leer Admin → Incidentes (incidents.jsonl), NO pay-ready.jsonl: el embudo se queda en payment_verified si el comprador cerró la pestaña.\n- Si el seat está ready degradado, esperar el reconcile (≤5 min); no re-provisionar. Contenedor muerto con id en metadata: destruir y relanzar UNA vez (mismo pago).\nNo hacer:\n- No abrir un segundo Checkout para el mismo session_id: reparar o lista de espera; nunca pedir que paguen otra vez.\n- No pegar contratos del wizard, modelos del CEO ni volcados crudos de Zod del launcher en chat o UI.\n- No rotar STRIPE_WEBHOOK_SECRET sin actualizar el env de Lab y reiniciar.\n- No tratar success:false del launcher durante 'provisioning' como seat faltante ni llamar launchCompany otra vez (doble launch).\nRunbook: docs/guides/lab-paid-not-ready.md (repo Lab-Avril-Life)",
+    "customerUpdate": "Tu pago está registrado. No vuelvas a pagar. Estamos reparando el laboratorio; avísanos con el session_id de Stripe si tarda más de unos minutos.",
+    "customerUpdateSource": "runbook:lab-paid-not-ready",
+    "customerUpdateLanguage": "es",
+    "requiresHumanApproval": true,
+    "caution": "PROPUESTA: solo se conocen estos campos de data/support-ticket-follow-up.jsonl (ticketId, devHandoff, customerUpdate, source). El esquema real y los campos de estado/nota interna de ops no se verificaron. La última línea por ticketId gana: no escribir sin fusionar lo que ops ya guardó. El arnés nunca escribe ahí."
+  },
+  "knownFailureMatches": []
+}

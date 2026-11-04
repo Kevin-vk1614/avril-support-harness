@@ -26,7 +26,7 @@ for (const r of records) {
     if (r.__parseError) throw new Error(r.__parseError);
     const o = triage(r);
     ok++; if (o.mustEscalate) esc++;
-    writeFileSync(`${outDir}/handoffs/${o.ticketId}.json`, JSON.stringify({ ticketId: o.ticketId, mustEscalate: o.mustEscalate, handoffSummary: o.handoffSummary, devHandoff: o.devHandoff, publicReplyDraft: o.publicReplyDraft }, null, 2));
+    writeFileSync(`${outDir}/handoffs/${o.ticketId}.json`, JSON.stringify({ ticketId: o.ticketId, mustEscalate: o.mustEscalate, handoffSummary: o.handoffSummary, devHandoff: o.devHandoff, publicReplyDraft: o.publicReplyDraft, followUpProposal: o.followUpProposal, knownFailureMatches: o.knownFailureMatches }, null, 2));
     lines.push(JSON.stringify({ ticketId: o.ticketId, category: o.category, severity: o.severity, mustEscalate: o.mustEscalate, resolvedByAgent: !o.mustEscalate, source: "exported-ticket" }));
     console.log(`${o.mustEscalate ? "ESCALA" : "FAQ   "}  ${o.ticketId}  ${o.category}  ${o.severity}`);
   } catch (e) { bad++; lines.push(JSON.stringify({ error: e.message })); console.log(`ERROR   ${e.message}`); }

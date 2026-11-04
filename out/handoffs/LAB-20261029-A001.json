@@ -1,0 +1,40 @@
+{
+  "ticketId": "LAB-20261029-A001",
+  "mustEscalate": false,
+  "handoffSummary": null,
+  "devHandoff": {
+    "ticketId": "LAB-20261029-A001",
+    "category": "faq",
+    "severity": "none",
+    "symptom": "Hola, ¿cuánto cuesta el trial de Lab y cuánto dura?",
+    "identifiers": {
+      "stripeSessionId": null,
+      "labSlug": null,
+      "userSelectedCategory": "other",
+      "locale": "es",
+      "createdAt": "2026-10-29T11:00:00.000Z",
+      "contactMasked": "a***@e***.com"
+    },
+    "missingForTriage": [],
+    "hypotheses": [],
+    "nextTechnicalStep": [
+      "Ninguno: pregunta cubierta por FAQ confirmada (borrador sujeto a aprobación humana)."
+    ],
+    "runbook": "docs/guides/lab-support-ops.md (repo Lab-Avril-Life)",
+    "doNot": [],
+    "knownFailureIds": [],
+    "notConfirmedTopics": [],
+    "reproducible": "node src/cli.js <ticket.json>  (determinista, sin red)"
+  },
+  "followUpProposal": {
+    "ticketId": "LAB-20261029-A001",
+    "source": "harness",
+    "devHandoff": "[NONE] LAB-20261029-A001 · faq\nSíntoma: Hola, ¿cuánto cuesta el trial de Lab y cuánto dura?\nSiguiente paso:\n- Ninguno: pregunta cubierta por FAQ confirmada (borrador sujeto a aprobación humana).\nRunbook: docs/guides/lab-support-ops.md (repo Lab-Avril-Life)",
+    "customerUpdate": "Lab tiene tres planes con precio de lista: Day Pass $6 por 48 horas, Trial $15 por 7 días y Monthly $29 por 30 días. El hosting está incluido, con créditos iniciales para empezar; traer tu propia API key de modelo (BYOK) es opcional.",
+    "customerUpdateSource": "faq:faq-pricing-duration",
+    "customerUpdateLanguage": "es",
+    "requiresHumanApproval": true,
+    "caution": "PROPUESTA: solo se conocen estos campos de data/support-ticket-follow-up.jsonl (ticketId, devHandoff, customerUpdate, source). El esquema real y los campos de estado/nota interna de ops no se verificaron. La última línea por ticketId gana: no escribir sin fusionar lo que ops ya guardó. El arnés nunca escribe ahí."
+  },
+  "knownFailureMatches": []
+}
