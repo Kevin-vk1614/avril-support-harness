@@ -21,12 +21,17 @@ if (file.endsWith(".jsonl")) {
 mkdirSync(`${outDir}/handoffs`, { recursive: true });
 const lines = [];
 let esc = 0, ok = 0, bad = 0;
+const seen = new Map();
 for (const r of records) {
   try {
     if (r.__parseError) throw new Error(r.__parseError);
     const o = triage(r);
     ok++; if (o.mustEscalate) esc++;
-    writeFileSync(`${outDir}/handoffs/${o.ticketId}.json`, JSON.stringify({ ticketId: o.ticketId, mustEscalate: o.mustEscalate, handoffSummary: o.handoffSummary, devHandoff: o.devHandoff, publicReplyDraft: o.publicReplyDraft }, null, 2));
+        // Un id repetido no debe pisar el handoff anterior: se guarda como <id>-2, <id>-3, ...
+    const n = (seen.get(o.ticketId) ?? 0) + 1; seen.set(o.ticketId, n);
+    const fname = n === 1 ? o.ticketId : `${o.ticketId}-${n}`;
+    if (n > 1) console.log(`AVISO   id repetido ${o.ticketId} → handoffs/${fname}.json`);
+    writeFileSync(`${outDir}/handoffs/${fname}.json`, JSON.stringify({ ticketId: o.ticketId, mustEscalate: o.mustEscalate, handoffSummary: o.handoffSummary, devHandoff: o.devHandoff, publicReplyDraft: o.publicReplyDraft }, null, 2));
     lines.push(JSON.stringify({ ticketId: o.ticketId, category: o.category, severity: o.severity, mustEscalate: o.mustEscalate, resolvedByAgent: !o.mustEscalate, source: "exported-ticket" }));
     console.log(`${o.mustEscalate ? "ESCALA" : "FAQ   "}  ${o.ticketId}  ${o.category}  ${o.severity}`);
   } catch (e) { bad++; lines.push(JSON.stringify({ error: e.message })); console.log(`ERROR   ${e.message}`); }
