@@ -73,6 +73,10 @@ test("falta message → error claro", () => {
   assert.throws(() => triage({ id: "LAB-X" }), /falta 'message'/);
 });
 
+test("message de solo espacios → error claro", () => {
+  assert.throws(() => triage({ id: "LAB-X", message: "   " }), /falta 'message'/);
+});
+
 test("escalamiento sin FAQ para texto vacío de intención", () => {
   const o = t("hola buenas tardes");
   assert.equal(o.mustEscalate, true);

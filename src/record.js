@@ -29,7 +29,7 @@ export function normalizeRecord(raw) {
   if (!raw || typeof raw !== "object") throw new TypeError("SupportTicketRecord debe ser un objeto JSON");
   const rec = {};
   for (const [canon, keys] of Object.entries(ALIASES)) rec[canon] = pick(raw, keys);
-  if (!rec.message || typeof rec.message !== "string") {
+  if (typeof rec.message !== "string" || !rec.message.trim()) {
     throw new TypeError(`Ticket ${rec.id ?? "(sin id)"}: falta 'message' (o alias body/description/text)`);
   }
   rec.id = rec.id ?? "UNKNOWN";
