@@ -1,7 +1,7 @@
 // Detecta y enmascara secretos ANTES de que cualquier texto llegue a la salida.
 // Regla: ningún secreto detectado puede aparecer en devHandoff / handoffSummary / log.
 const PATTERNS = [
-  { type: "stripe_secret_key", re: /\b(?:sk|rk)_(?:live|test)_[A-Za-z0-9_]{8,}/g },
+  { type: "stripe_secret_key", re: /\b(?:sk|rk)_(?:live|test)_[A-Za-z0-9_]{8,}/gi },
   { type: "stripe_webhook_secret", re: /\bwhsec_[A-Za-z0-9_]{8,}/g },
   { type: "private_key_pem", re: /-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?(?:-----END [A-Z ]*PRIVATE KEY-----|$)/g },
   { type: "wallet_private_key_hex", re: /\b0x[a-fA-F0-9]{64}\b/g },
