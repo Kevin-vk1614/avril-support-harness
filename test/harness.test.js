@@ -193,3 +193,7 @@ test("llaves y tokens se enmascaran sin importar mayúsculas/minúsculas", () =>
     for (const secreto of [FAKE, "abcdefghijklmnopqrstuvwxyz123456", "ABCDEFGHIJKLMNOPQRSTUVWX"]) assert.ok(!s.includes(secreto), `${m} → filtró ${secreto}`);
   }
 });
+
+test("mensaje de solo espacios o saltos de línea se rechaza (reporte de valrami-hue, PR #4)", () => {
+  for (const m of ["   ", "\n\t \n", ""]) assert.throws(() => triage({ ...BASE, message: m }), /falta 'message'/);
+});

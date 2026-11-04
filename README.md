@@ -14,7 +14,7 @@ NO debe resolver solo, entrega un resumen útil para humano/dev.
 git clone https://github.com/Kevin-vk1614/avril-support-harness.git && cd avril-support-harness
 node -v                      # >= 18
 npm run scenarios            # 8 escenarios → out/ (evidencia)
-npm test                     # 46 pruebas unitarias (node:test)
+npm test                     # 49 pruebas unitarias (node:test)
 node src/cli.js fixtures/example-ticket.json     # un ticket → JSON a stdout
 cat ticket.json | node src/cli.js -              # o por stdin (también acepta un arreglo)
 ```
@@ -106,7 +106,7 @@ Además, **8 casos de fallas reales** (`fixtures/known-failures.json`): 6 de los
 | S08 | datos personales / borrado | escalar; email enmascarado |
 
 > **Honestidad sobre la validación:** los escenarios los escribí junto con las reglas, así que 8/8 no prueba generalización.
-> Por eso hay 46 pruebas (`test/harness.test.js`) que sí encontraron una falla (ver abajo).
+> Por eso hay 49 pruebas (`test/harness.test.js`) que sí encontraron una falla (ver abajo).
 
 ## Integración con Lab (según `lab-support-ops.md`)
 
@@ -167,6 +167,8 @@ Prueba con `fixtures/support-tickets.sample.jsonl`. Nota: un export real trae em
 | 6 | `SKILL.md` llamaba `node src/cli.js`, pero OpenClaw copia solo el skill al workspace → el comando no existiría | instalé el skill en OpenClaw real | el skill usa `$AVRIL_SUPPORT_HARNESS` y declara `requires.env`; verificado (sin la variable: *Needs setup*; con ella: *Ready*) |
 | 9 | **El arnés asumía 9 campos que no existen** (`id`, `subject`, `status`, `source`, `wallet`, `stripePaymentIntentId`, `paymentStatus`, `rentalStatus`, `deploymentId`) y no usaba `category`, `locale`, `clientIp`, `scope` | tipo real `lib/support-tickets.ts` | Contrato reescrito, tabla supuesto → real, fixtures rehechos, `clientIp` nunca sale, `category` usada como señal |
 | 10 | Un email escrito dentro del `message` viajaba completo al handoff | revisión al cambiar el contrato | `maskPiiInText` + prueba |
+| 16 | **Un `ticketId` repetido en el export sobrescribía el handoff anterior** (el log decía 2 tickets, había 1 archivo) | PR #3 de valrami-hue (reproducido) | `triage-jsonl.js` guarda `<id>__dup2.json`, avisa y marca `duplicateOf` en el log; prueba nueva |
+| 17 | Mensaje de solo espacios (PR #4) | PR #4 de valrami-hue | Ya se rechazaba; se agregó la prueba que lo vigila |
 | 14 | El mensaje oficial del runbook y su **'No hacer'** (no segundo Checkout, no relanzar `launchCompany`) no estaban en el arnés; las pistas de `/api/rentals?session_id=` eran suposiciones del Reality Audit | `lab-paid-not-ready.md` | Playbook rehecho con los pasos 1–7 del runbook; `doNot` y mensaje oficial (ES/EN) en la salida |
 | 15 | "¿Hay lista de espera?" antes de comprar se habría tratado como falla de capacidad | diseño del caso nuevo | El caso exige contexto de pago (`requirePaid`); control negativo en pruebas |
 | 12 | `ticketId` exigía 4 hex (`[0-9A-F]`), pero los fixtures dev reales usan `DEV1`/`DEV2` | `support-tickets_dev.jsonl` del repo Lab | Regex a 4 alfanuméricos mayúsculas (el generador sí produce hex); prueba con el fixture real |
@@ -183,6 +185,7 @@ Prueba con `fixtures/support-tickets.sample.jsonl`. Nota: un export real trae em
 - Hipótesis y runbooks salen de documentos del repo MCP (auditoría 2026-10-02): **pueden estar desfasados** respecto a producción.
 - **Verificado contra documentos reales de Lab:** `lib/support-tickets.ts`, `lab-seat-failures.md`, `lab-paid-not-ready.md` y `lab-support-ops.md`. **No verificado:** la interfaz `/admin` en vivo, el esquema real de `data/support-ticket-follow-up.jsonl` (solo se conocen 4 campos) y el comportamiento del envío de correo (Resend, hoy apagado por defecto). Las hipótesis mezclan los documentos de Lab (más recientes) con el Reality Audit (2026-10-02).
 - Los casos de fallas reconocen español e inglés con palabras clave: un mensaje con otras palabras caerá en `no_match`/`access_failure` y escala igual (falla hacia el lado seguro).
+- **Ids no únicos:** el `ticketId` real usa solo 4 hex (65 536 valores por día); con unos ~300 tickets en un día ya es probable una colisión. El arnés no asume unicidad (ver fila 16), pero en Lab conviene tenerlo presente porque la fila de seguimiento usa "última línea por `ticketId` gana".
 - Un mensaje que solo mencione "certificado", "caddy" o "websocket" (aunque sea una pregunta general) escala como falla conocida: sobre-escalamiento aceptado.
 - El ticket real no trae estado de pago ni PaymentIntent: "pagó" se **infiere** del texto o de `category=not_ready`.
 - Emails/teléfonos dentro del texto se enmascaran con reglas simples; nombres propios y direcciones no.
