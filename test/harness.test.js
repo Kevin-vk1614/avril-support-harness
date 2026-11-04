@@ -103,3 +103,10 @@ test("FAQ harnesses; capacidad/waitlist no se promete", () => {
   assert.equal(o.category, "topic_not_confirmed");
   assert.equal(o.publicReplyDraft, null);
 });
+
+
+test("llave Stripe en MAYUSCULAS tambien se enmascara", () => {
+  const o = t("SK_" + "LIVE_RAWSECRET1234567890abc");
+  assert.equal(o.category, "secrets_exposed");
+  assert.ok(o.redactions.includes("stripe_secret_key"));
+});
