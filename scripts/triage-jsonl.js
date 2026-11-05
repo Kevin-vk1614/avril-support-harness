@@ -25,8 +25,14 @@ const seen = new Map(); // ticketId -> veces vistas (un id repetido NO debe sobr
 for (const r of records) {
   try {
     if (r.__parseError) throw new Error(r.__parseError);
-    const o = triage(r);
-    ok++; if (o.mustEscalate) esc++;
+const o = triage(r);
+
+if (!/^LAB-\d{8}-[0-9A-Z]{4}$/.test(o.ticketId)) {
+  throw new Error(`ticketId inválido para nombre de archivo: ${o.ticketId}`);
+}
+
+ok++; if (o.mustEscalate) esc++;
+
     const n = (seen.get(o.ticketId) ?? 0) + 1;
     seen.set(o.ticketId, n);
     const handoffFile = n === 1 ? `${o.ticketId}.json` : `${o.ticketId}__dup${n}.json`;
