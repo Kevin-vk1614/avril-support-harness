@@ -4,7 +4,8 @@ Probado desde clones limpios siguiendo su README:
 - **Linux, Python 3.12.3:** primero sobre el commit `8e071c2` y luego re-verificado sobre `d85d3e3` (versión actual, 2026-11-03).
 - **Windows, PowerShell, `py` (Kevin):** `py run.py` corre (10 solicitudes en 0.024 s), `py -m unittest discover -s tests` pasa 21/21 y, tras el parche del PR, 23/23.
 
-No verificado: `git status` tras correr en Windows, el modo `--cliente anthropic` con llave real (el ticket lo prohíbe) y Python 3.9–3.11.
+Verificado en Windows con el parche del PR: tras `py run.py`, `git status` solo muestra los archivos del parche y **no** `crm/leads.csv`.
+No verificado: el modo `--cliente anthropic` con llave real (el ticket lo prohíbe) y Python 3.9–3.11.
 
 | # | Fase | Qué pasó | Cómo reproducir | Severidad | Estado |
 |---|---|---|---|---|---|
