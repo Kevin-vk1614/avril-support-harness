@@ -107,6 +107,12 @@ export function triage(rawRecord) {
 
   // 1) Redactar ANTES de analizar o emitir. Todo lo que sale usa el texto redactado.
   const red = redact(rec.message);
+  const slugRed = redact(rec.labSlug ?? "");
+  const safeLabSlug = rec.labSlug == null ? null : slugRed.text;
+  const allRedactions = [...new Set([...red.findings, ...slugRed.findings])];
+
+
+
   const safeText = maskPiiInText(red.text).replace(/\s+/g, " ").trim(); // sin secretos, emails ni teléfonos
   const rawNorm = norm(rec.message);
 
@@ -136,7 +142,7 @@ export function triage(rawRecord) {
   // Solo identificadores del tipo real. clientIp y email completo NUNCA se emiten.
   const identifiers = {
     stripeSessionId: rec.stripeSessionId,
-    labSlug: rec.labSlug,
+    labSlug: safeLabSlug,
     userSelectedCategory: rec.userCategory,
     locale: rec.locale,
     createdAt: rec.createdAt,
@@ -167,7 +173,7 @@ export function triage(rawRecord) {
   };
 
   // handoffSummary: texto corto para pegar en el campo "Handoff a dev" de /admin.
-  const idBits = [rec.stripeSessionId && `session=${rec.stripeSessionId}`, rec.labSlug && `slug=${rec.labSlug}`, rec.userCategory !== "other" && `elegida=${rec.userCategory}`].filter(Boolean).join(" ");
+  const idBits = [rec.stripeSessionId && `session=${rec.stripeSessionId}`, safeLabSlug && `slug=${safeLabSlug}`, rec.userCategory !== "other" && `elegida=${rec.userCategory}`].filter(Boolean).join(" ");
   const handoffSummary = mustEscalate
     ? `[${severity.toUpperCase()}] ${rec.ticketId} · ${category}` +
       (secondary.length ? ` (+${secondary.join(",")})` : "") +
@@ -238,7 +244,7 @@ export function triage(rawRecord) {
       replyDraft: { text: f.respuesta, antesDeEnviar: f.antesDeEnviar, replyLanguage: "es", needsTranslation: rec.locale === "en", requiresHumanApproval: true, sendStatus: "NOT_SENT" },
       cuandoEscalar: f.cuandoEscalar, diagnostico: f.diagnostico, regla: f.regla, fuente: f.fuente,
     })),
-    redactions: red.findings,
+    redactions: allRedactions,
     warnings: rec.warnings,
     safety: { autonomousSend: false, paymentActions: false, externalCalls: false, asksForCredentials: false },
   };
