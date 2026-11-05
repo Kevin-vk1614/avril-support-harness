@@ -10,7 +10,7 @@ const PATTERNS = [
   { type: "generic_api_key", re: /\b(?:sk|pk|key|api|tok)[-_][A-Za-z0-9_-]{20,}\b/gi },
   { type: "seed_phrase", re: /\b(?:seed phrase|frase semilla|mnemonic|frase de recuperaci[oó]n)\b\s*[:=]?\s*(?:[a-z]+\s+){5,}[a-z]+/gi },
   // "contraseña es X", "password: X", "mi clave = X"
-  { type: "password", re: /\b(?:contrase[nñ]a|password|passwd|clave|pwd)\b\s*(?:es|is|:|=)\s*\S+/gi },
+ { type: "password", re: /\b(?:contrase[nñ]a|password|passwd|clave|pwd)\b\s*(?:es|is|:|=)\s*(?:"[^"\r\n]*"|'[^'\r\n]*'|\S+)/gi },
 ];
 
 export function redact(text) {
