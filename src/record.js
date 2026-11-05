@@ -17,9 +17,15 @@ const TICKET_ID_RE = /^LAB-\d{8}-[0-9A-Z]{4}$/; // el generador real da 4 hex (r
 export function normalizeRecord(raw) {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new TypeError("SupportTicketRecord debe ser un objeto JSON");
   const warnings = [];
-  const ticketId = raw.ticketId ?? raw.id ?? null;
-  if (raw.ticketId == null && raw.id != null) warnings.push("campo 'id' no existe en el contrato real; usar 'ticketId'");
+   const ticketId = raw.ticketId ?? raw.id ?? null;
 
+  if (ticketId == null || String(ticketId).trim() === "") {
+    throw new TypeError("Ticket sin id: proporciona ticketId o id");
+  }
+
+  const normalizedTicketId = String(ticketId).trim();
+
+  if (raw.ticketId == null && raw.id != null) warnings.push("campo 'id' no existe en el contrato real; usar 'ticketId'");
   if (typeof raw.message !== "string" || !raw.message.trim()) {
     throw new TypeError(`Ticket ${ticketId ?? "(sin ticketId)"}: falta 'message' (texto no vacío)`);
   }
@@ -35,7 +41,7 @@ export function normalizeRecord(raw) {
   if (extra.length) warnings.push(`campos fuera del contrato real (ignorados): ${extra.join(", ")}`);
 
   return {
-    ticketId: ticketId ?? "UNKNOWN",
+    ticketId: normalizedTicketId,
     createdAt: raw.createdAt ?? null,
     contact: raw.email ?? null,
     userCategory,
