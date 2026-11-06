@@ -1,6 +1,6 @@
 # Reporte de escenarios (esperado vs. obtenido)
 
-Ejecución determinista, sin red. Total: **16** casos · **16 PASS** · **0 FAIL** · 61.6 ms.
+Ejecución determinista, sin red. Total: **16** casos · **16 PASS** · **0 FAIL**.
 
 ## Los 8 escenarios
 
@@ -354,4 +354,4 @@ _Por qué:_ No hay política de datos confirmada: humano/legal. Ni el email del 
 - Escenarios principales: escalados esperados 7/8 · obtenidos 7/8 · resueltos por FAQ: 1
 - Casos de fallas reales: 8/8 detectados y escalados
 - Errores (esperado ≠ obtenido): 0
-- Tiempo total: 61.6 ms · Costo de tokens/API: $0 (reglas deterministas)
+- Costo de tokens/API: $0 (reglas deterministas). El tiempo se imprime en consola, no en este archivo, para que dos ejecuciones den exactamente la misma salida.

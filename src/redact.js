@@ -10,7 +10,8 @@ const PATTERNS = [
   { type: "generic_api_key", re: /\b(?:sk|pk|key|api|tok)[-_][A-Za-z0-9_-]{20,}\b/gi },
   { type: "seed_phrase", re: /\b(?:seed phrase|frase semilla|mnemonic|frase de recuperaci[oó]n)\b\s*[:=]?\s*(?:[a-z]+\s+){5,}[a-z]+/gi },
   // "contraseña es X", "password: X", "mi clave = X"
-  { type: "password", re: /\b(?:contrase[nñ]a|password|passwd|clave|pwd)\b\s*(?:es|is|:|=)\s*\S+/gi },
+  // valor entre comillas (rectas, curvas o «») puede llevar espacios; si no, una palabra
+  { type: "password", re: /\b(?:contrase[nñ]a|password|passwd|clave|pwd)\b\s*(?:es|is|:|=)\s*(?:"[^"\n]*"|'[^'\n]*'|“[^”\n]*”|‘[^’\n]*’|«[^»\n]*»|\S+)/gi },
 ];
 
 export function redact(text) {
@@ -37,4 +38,18 @@ export function maskPiiInText(text) {
   return String(text ?? "")
     .replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, "[EMAIL]")
     .replace(/(?<![\w-])\+?\d[\d\s().-]{8,}\d(?![\w-])/g, "[TEL]");
+}
+
+// Campos identificadores (stripeSessionId, labSlug): solo patrones de alta confianza, para no marcar
+// slugs legítimos como "api-company-os-demo-agent" como si fueran llaves.
+const ID_TYPES = ["stripe_secret_key", "stripe_webhook_secret", "private_key_pem", "wallet_private_key_hex", "jwt_or_bearer"];
+export function redactIdentifier(value) {
+  if (value == null) return { value, findings: [] };
+  let out = String(value);
+  const findings = [];
+  for (const { type, re } of PATTERNS) {
+    if (!ID_TYPES.includes(type)) continue;
+    out = out.replace(re, () => { findings.push(type); return `[REDACTED:${type}]`; });
+  }
+  return { value: out, findings: [...new Set(findings)] };
 }

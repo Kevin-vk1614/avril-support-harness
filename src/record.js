@@ -20,10 +20,14 @@ export function normalizeRecord(raw) {
   const ticketId = raw.ticketId ?? raw.id ?? null;
   if (raw.ticketId == null && raw.id != null) warnings.push("campo 'id' no existe en el contrato real; usar 'ticketId'");
 
+  if (typeof ticketId !== "string" || !ticketId.trim()) {
+    throw new TypeError("Ticket sin 'ticketId': no se puede correlacionar el handoff con el ticket en /admin");
+  }
   if (typeof raw.message !== "string" || !raw.message.trim()) {
     throw new TypeError(`Ticket ${ticketId ?? "(sin ticketId)"}: falta 'message' (texto no vacío)`);
   }
   if (raw.scope !== "avril.lab.support_ticket") warnings.push(`scope '${raw.scope ?? "(ausente)"}' distinto de 'avril.lab.support_ticket'`);
+  if (!/^[A-Za-z0-9._-]+$/.test(ticketId) || ticketId.includes("..")) warnings.push(`ticketId con caracteres no seguros para nombre de archivo; se sanea al guardar`);
   if (!TICKET_ID_RE.test(String(ticketId))) warnings.push(`ticketId '${ticketId ?? "(ausente)"}' no cumple LAB-YYYYMMDD-XXXX (4 alfanuméricos mayúsculas)`);
   let userCategory = raw.category;
   if (!REAL_CATEGORIES.includes(userCategory)) {
@@ -35,7 +39,7 @@ export function normalizeRecord(raw) {
   if (extra.length) warnings.push(`campos fuera del contrato real (ignorados): ${extra.join(", ")}`);
 
   return {
-    ticketId: ticketId ?? "UNKNOWN",
+    ticketId,
     createdAt: raw.createdAt ?? null,
     contact: raw.email ?? null,
     userCategory,

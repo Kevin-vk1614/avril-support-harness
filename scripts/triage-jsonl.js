@@ -5,6 +5,7 @@
 // Uso: node scripts/triage-jsonl.js <archivo> [directorio-salida]
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { triage } from "../src/harness.js";
+import { safeFileName } from "../src/text.js";
 
 const [file, outDir = "out/live"] = process.argv.slice(2);
 if (!file) { console.error("Uso: node scripts/triage-jsonl.js <archivo.jsonl|.json> [dir-salida]"); process.exit(2); }
@@ -29,7 +30,8 @@ for (const r of records) {
     ok++; if (o.mustEscalate) esc++;
     const n = (seen.get(o.ticketId) ?? 0) + 1;
     seen.set(o.ticketId, n);
-    const handoffFile = n === 1 ? `${o.ticketId}.json` : `${o.ticketId}__dup${n}.json`;
+    const base = safeFileName(o.ticketId); // un ticketId con "../" no puede escribir fuera de la carpeta de salida
+    const handoffFile = n === 1 ? `${base}.json` : `${base}__dup${n}.json`;
     if (n > 1) { dups++; console.log(`AVISO   ticketId repetido ${o.ticketId} (aparición ${n}): se guarda como ${handoffFile}`); }
     writeFileSync(`${outDir}/handoffs/${handoffFile}`, JSON.stringify({ ticketId: o.ticketId, mustEscalate: o.mustEscalate, handoffSummary: o.handoffSummary, devHandoff: o.devHandoff, publicReplyDraft: o.publicReplyDraft, followUpProposal: o.followUpProposal, knownFailureMatches: o.knownFailureMatches }, null, 2));
     lines.push(JSON.stringify({ ticketId: o.ticketId, category: o.category, severity: o.severity, mustEscalate: o.mustEscalate, resolvedByAgent: !o.mustEscalate, source: "exported-ticket", handoffFile: `${outDir}/handoffs/${handoffFile}`, ...(n > 1 ? { duplicateOf: o.ticketId, occurrence: n } : {}) }));

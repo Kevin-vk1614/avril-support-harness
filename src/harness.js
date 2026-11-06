@@ -1,5 +1,5 @@
 import { norm } from "./text.js";
-import { redact, maskEmail, maskPiiInText } from "./redact.js";
+import { redact, redactIdentifier, maskEmail, maskPiiInText } from "./redact.js";
 import { normalizeRecord } from "./record.js";
 import { matchFaq, matchNotConfirmed } from "./faq.js";
 import { detectSignals, pickCategory, SEVERITY } from "./classify.js";
@@ -107,6 +107,12 @@ export function triage(rawRecord) {
 
   // 1) Redactar ANTES de analizar o emitir. Todo lo que sale usa el texto redactado.
   const red = redact(rec.message);
+  // Un secreto pegado en un campo identificador también cuenta (y no debe salir en ids ni en el resumen).
+  for (const f of ["stripeSessionId", "labSlug"]) {
+    const r = redactIdentifier(rec[f]);
+    if (r.findings.length) { rec[f] = r.value; red.findings.push(...r.findings.map((t) => `${t}@${f}`)); }
+  }
+  red.findings = [...new Set(red.findings)];
   const safeText = maskPiiInText(red.text).replace(/\s+/g, " ").trim(); // sin secretos, emails ni teléfonos
   const rawNorm = norm(rec.message);
 

@@ -14,7 +14,7 @@ NO debe resolver solo, entrega un resumen útil para humano/dev.
 git clone https://github.com/Kevin-vk1614/avril-support-harness.git && cd avril-support-harness
 node -v                      # >= 18
 npm run scenarios            # 8 escenarios → out/ (evidencia)
-npm test                     # 49 pruebas unitarias (node:test)
+npm test                     # 60 pruebas unitarias (node:test)
 node src/cli.js fixtures/example-ticket.json     # un ticket → JSON a stdout
 cat ticket.json | node src/cli.js -              # o por stdin (también acepta un arreglo)
 ```
@@ -106,7 +106,7 @@ Además, **8 casos de fallas reales** (`fixtures/known-failures.json`): 6 de los
 | S08 | datos personales / borrado | escalar; email enmascarado |
 
 > **Honestidad sobre la validación:** los escenarios los escribí junto con las reglas, así que 8/8 no prueba generalización.
-> Por eso hay 49 pruebas (`test/harness.test.js`) que sí encontraron una falla (ver abajo).
+> Por eso hay 60 pruebas (`test/harness.test.js`) que sí encontraron una falla (ver abajo).
 
 ## Integración con Lab (según `lab-support-ops.md`)
 
@@ -169,6 +169,12 @@ Prueba con `fixtures/support-tickets.sample.jsonl`. Nota: un export real trae em
 | 10 | Un email escrito dentro del `message` viajaba completo al handoff | revisión al cambiar el contrato | `maskPiiInText` + prueba |
 | 16 | **Un `ticketId` repetido en el export sobrescribía el handoff anterior** (el log decía 2 tickets, había 1 archivo) | PR #3 de valrami-hue (reproducido) | `triage-jsonl.js` guarda `<id>__dup2.json`, avisa y marca `duplicateOf` en el log; prueba nueva |
 | 17 | Mensaje de solo espacios (PR #4) | PR #4 de valrami-hue | Ya se rechazaba; se agregó la prueba que lo vigila |
+| 18 | **Contraseña entre comillas con espacios salía completa** (`contraseña es "mi clave larga"` solo enmascaraba la primera palabra) | PR #10 de valrami-hue (reproducido) | Regex acepta valores entre comillas rectas, curvas y «»; prueba |
+| 19 | **Una llave pegada en `labSlug` o `stripeSessionId` salía completa** en ids y resumen | PR #9 (reproducido) | `redactIdentifier` con patrones de alta confianza (sin falsos positivos en slugs largos); escala como crítico |
+| 20 | **Un `ticketId` con `../` escribía un archivo fuera de la carpeta de salida** (probado: creó `evil.json` fuera de `handoffs/`) | PR #8 (reproducido) | `safeFileName()` en `triage-jsonl` y `run-scenarios`; aviso en `warnings`; el dato original se conserva dentro del JSON |
+| 21 | En `cli.js`, un ticket malo en un arreglo tumbaba todo el lote (0 bytes de salida) | PR #6 (reproducido) | Cada ticket se procesa aparte; el malo sale como `{index, error}` y el código de salida es 1 |
+| 22 | Un ticket **sin `ticketId`** se procesaba como `UNKNOWN` y varios chocaban entre sí | PR #5 (reproducido) | Se rechaza con mensaje claro (no se puede correlacionar con `/admin`); en lotes se reporta y se sigue |
+| 23 | **Correr los escenarios dos veces daba salidas distintas** (el reporte traía tiempos en ms: `git status` sucio) | PR #7 (reproducido) | Los archivos de `out/` ya no llevan tiempos (van a consola); prueba que compara dos corridas |
 | 14 | El mensaje oficial del runbook y su **'No hacer'** (no segundo Checkout, no relanzar `launchCompany`) no estaban en el arnés; las pistas de `/api/rentals?session_id=` eran suposiciones del Reality Audit | `lab-paid-not-ready.md` | Playbook rehecho con los pasos 1–7 del runbook; `doNot` y mensaje oficial (ES/EN) en la salida |
 | 15 | "¿Hay lista de espera?" antes de comprar se habría tratado como falla de capacidad | diseño del caso nuevo | El caso exige contexto de pago (`requirePaid`); control negativo en pruebas |
 | 12 | `ticketId` exigía 4 hex (`[0-9A-F]`), pero los fixtures dev reales usan `DEV1`/`DEV2` | `support-tickets_dev.jsonl` del repo Lab | Regex a 4 alfanuméricos mayúsculas (el generador sí produce hex); prueba con el fixture real |

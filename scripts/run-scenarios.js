@@ -4,6 +4,7 @@
 import { readFileSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { triage } from "../src/harness.js";
+import { safeFileName } from "../src/text.js";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const OUT = `${root}out`;
@@ -58,8 +59,8 @@ for (const set of SETS) {
     const pass = checks.every((c) => c[3]);
     if (!pass) failures++;
     rows.push({ sc, out, checks, pass });
-    writeFileSync(`${OUT}/handoffs/${out.ticketId}.json`, JSON.stringify({ ticketId: out.ticketId, mustEscalate: out.mustEscalate, handoffSummary: out.handoffSummary, devHandoff: out.devHandoff, followUpProposal: out.followUpProposal, knownFailureMatches: out.knownFailureMatches }, null, 2));
-    log.push({ ticketId: out.ticketId, scenario: sc.id, category: out.category, severity: out.severity, mustEscalate: out.mustEscalate, resolvedByAgent: !out.mustEscalate, knownFailureIds: out.devHandoff.knownFailureIds, handoffFile: `out/handoffs/${out.ticketId}.json`, simulated: true });
+    writeFileSync(`${OUT}/handoffs/${safeFileName(out.ticketId)}.json`, JSON.stringify({ ticketId: out.ticketId, mustEscalate: out.mustEscalate, handoffSummary: out.handoffSummary, devHandoff: out.devHandoff, followUpProposal: out.followUpProposal, knownFailureMatches: out.knownFailureMatches }, null, 2));
+    log.push({ ticketId: out.ticketId, scenario: sc.id, category: out.category, severity: out.severity, mustEscalate: out.mustEscalate, resolvedByAgent: !out.mustEscalate, knownFailureIds: out.devHandoff.knownFailureIds, handoffFile: `out/handoffs/${safeFileName(out.ticketId)}.json`, simulated: true });
   }
   sections.push({ set, rows });
 }
@@ -69,7 +70,7 @@ const all = sections.flatMap((s) => s.rows);
 writeFileSync(`${OUT}/tickets-log.jsonl`, log.map((l) => JSON.stringify(l)).join("\n") + "\n");
 writeFileSync(`${OUT}/results.json`, JSON.stringify(all.map((r) => ({ scenario: r.sc.id, pass: r.pass, output: r.out })), null, 2));
 
-let md = `# Reporte de escenarios (esperado vs. obtenido)\n\nEjecución determinista, sin red. Total: **${all.length}** casos · **${all.length - failures} PASS** · **${failures} FAIL** · ${total} ms.\n`;
+let md = `# Reporte de escenarios (esperado vs. obtenido)\n\nEjecución determinista, sin red. Total: **${all.length}** casos · **${all.length - failures} PASS** · **${failures} FAIL**.\n`;
 for (const { set, rows } of sections) {
   md += `\n## ${set.title}\n\n| # | Caso | Esperado | Obtenido | Resultado |\n|---|---|---|---|---|\n`;
   for (const r of rows) {
@@ -86,7 +87,7 @@ for (const { set, rows } of sections) {
 }
 const main = sections[0].rows;
 const esc = main.filter((r) => r.out.mustEscalate).length;
-md += `\n## Métricas\n- Escenarios principales: escalados esperados ${main.filter((r) => r.sc.expected.mustEscalate).length}/${main.length} · obtenidos ${esc}/${main.length} · resueltos por FAQ: ${main.length - esc}\n- Casos de fallas reales: ${sections[1].rows.length}/${sections[1].rows.length} detectados y escalados\n- Errores (esperado ≠ obtenido): ${failures}\n- Tiempo total: ${total} ms · Costo de tokens/API: $0 (reglas deterministas)\n`;
+md += `\n## Métricas\n- Escenarios principales: escalados esperados ${main.filter((r) => r.sc.expected.mustEscalate).length}/${main.length} · obtenidos ${esc}/${main.length} · resueltos por FAQ: ${main.length - esc}\n- Casos de fallas reales: ${sections[1].rows.length}/${sections[1].rows.length} detectados y escalados\n- Errores (esperado ≠ obtenido): ${failures}\n- Costo de tokens/API: $0 (reglas deterministas). El tiempo se imprime en consola, no en este archivo, para que dos ejecuciones den exactamente la misma salida.\n`;
 writeFileSync(`${OUT}/scenario-report.md`, md);
 
 console.log(`${all.length - failures}/${all.length} casos PASS (8 escenarios + ${sections[1].rows.length} fallas reales) · escalados ${esc}/${main.length} en los 8 · ${total} ms`);
